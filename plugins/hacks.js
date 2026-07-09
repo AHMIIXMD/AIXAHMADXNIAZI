@@ -1,5 +1,5 @@
 // ============================================
-// AHMAD MD - ALL HACK COMMANDS
+// AHMAD MD - ALL HACK COMMANDS (FIXED)
 // ============================================
 
 import { cmd } from '../command.js';
@@ -53,8 +53,9 @@ cmd({
             await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
 
+        // Fixed: Using a working image URL
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/q20h6q.jpg" },
+            image: { url: "https://files.catbox.moe/ky6phx.jpg" },
             caption: "*😂 You've been HACKED!*\n> _Don't worry, it's just for fun!_"
         }, { quoted: mek });
 
@@ -65,7 +66,7 @@ cmd({
 });
 
 // ============================================
-// 2. MOBILE HACK COMMAND
+// 2. MOBILE HACK COMMAND - FIXED
 // ============================================
 cmd({
     pattern: "mobilehack",
@@ -109,9 +110,9 @@ cmd({
             await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
 
+        // Fixed: Removed broken image, using text only
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/y6qmzx.jpg" },
-            caption: "*📱 Your Phone Has Been Hacked!*\n> _Just kidding! All in good fun!_"
+            text: "*📱 Your Phone Has Been Hacked!*\n> _Just kidding! All in good fun!_"
         }, { quoted: mek });
 
     } catch (e) {
@@ -121,7 +122,7 @@ cmd({
 });
 
 // ============================================
-// 3. INSTAGRAM HACK COMMAND
+// 3. INSTAGRAM HACK COMMAND - FIXED
 // ============================================
 cmd({
     pattern: "ighack",
@@ -164,8 +165,9 @@ cmd({
             await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
 
+        // Fixed: Using working image URL
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/ngw30t.jpg" },
+            image: { url: "https://files.catbox.moe/ky6phx.jpg" },
             caption: "*📸 Instagram Hacked!*\n> _Don't worry, your account is safe!_"
         }, { quoted: mek });
 
@@ -176,7 +178,7 @@ cmd({
 });
 
 // ============================================
-// 4. FACEBOOK HACK COMMAND
+// 4. FACEBOOK HACK COMMAND - FIXED
 // ============================================
 cmd({
     pattern: "fbhack",
@@ -219,8 +221,9 @@ cmd({
             await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
 
+        // Fixed: Using working image URL
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/8q1qmq.jpg" },
+            image: { url: "https://files.catbox.moe/ky6phx.jpg" },
             caption: "*📘 Facebook Hacked!*\n> _All in good fun! Your account is safe!_"
         }, { quoted: mek });
 
@@ -231,7 +234,7 @@ cmd({
 });
 
 // ============================================
-// 5. FBI HACK COMMAND
+// 5. FBI HACK COMMAND - FIXED
 // ============================================
 cmd({
     pattern: "fbihack",
@@ -274,8 +277,9 @@ cmd({
             await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
 
+        // Fixed: Using working image URL
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/1pba7s.jpg" },
+            image: { url: "https://files.catbox.moe/ky6phx.jpg" },
             caption: "*🕵️ FBI Has Located You!*\n> _It's just a joke! You're safe!_"
         }, { quoted: mek });
 
@@ -286,7 +290,7 @@ cmd({
 });
 
 // ============================================
-// 6. SNAPCHAT HACK COMMAND
+// 6. SNAPCHAT HACK COMMAND - FIXED
 // ============================================
 cmd({
     pattern: "snaphack",
@@ -328,8 +332,9 @@ cmd({
             await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
 
+        // Fixed: Using working image URL
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/d2a9kv.jpg" },
+            image: { url: "https://files.catbox.moe/ky6phx.jpg" },
             caption: "*👻 Snapchat Hacked!*\n> _No worries, your snaps are safe!_"
         }, { quoted: mek });
 
@@ -340,7 +345,7 @@ cmd({
 });
 
 // ============================================
-// 7. HACKLIST COMMAND - Show All Hacks
+// 7. HACKLIST COMMAND - Show All Hacks - FIXED
 // ============================================
 cmd({
     pattern: "hacklist",
@@ -375,6 +380,59 @@ cmd({
         await conn.sendMessage(from, {
             image: { url: "https://files.catbox.moe/ky6phx.jpg" },
             caption: hackMenu
+        }, { quoted: mek });
+
+    } catch (e) {
+        console.log(e);
+        reply(`❌ Error: ${e.message}`);
+    }
+});
+
+// ============================================
+// 8. HAPPY BIRTHDAY COMMAND - NEW
+// ============================================
+cmd({
+    pattern: "happybirthday",
+    alias: ["hbd", "birthday"],
+    desc: "Happy birthday celebration animation",
+    react: "🎂",
+    category: "fun",
+    filename: __filename
+}, async (conn, mek, m, { from, reply, isCreator }) => {
+    try {
+        if (!isCreator) {
+            return await conn.sendMessage(from, {
+                text: "*📛 This is an owner-only command.*"
+            }, { quoted: mek });
+        }
+
+        const hbdSteps = [
+            "🎂 *Happy Birthday!* 🎂",
+            "🎉 *Celebrating...* 🎉",
+            "🎈 *Party Time!* 🎈",
+            "🎁 *Gifts Arriving...* 🎁",
+            "🎊 *Confetti Everywhere!* 🎊",
+            "🎂 *Blow the Candles!* 🎂",
+            "🌟 *Make a Wish!* 🌟",
+            "🎉 *Happy Birthday To You!* 🎉"
+        ];
+
+        const sentMsg = await conn.sendMessage(from, {
+            text: hbdSteps[0]
+        }, { quoted: mek });
+
+        for (let i = 1; i < hbdSteps.length; i++) {
+            await sleep(800);
+            const protocolMsg = {
+                key: sentMsg.key,
+                type: 0xe,
+                editedMessage: { conversation: hbdSteps[i] }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
+        }
+
+        await conn.sendMessage(from, {
+            text: "*🎂 Happy Birthday! Have a wonderful day!* 🎉"
         }, { quoted: mek });
 
     } catch (e) {
