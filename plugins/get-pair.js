@@ -1,5 +1,8 @@
-const { cmd } = require('../command');
-const axios = require('axios');
+import { cmd } from '../command.js';
+import axios from 'axios';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
 
 const API_BASE_URL = 'https://ahmad-md.vercel.app/api';
 
