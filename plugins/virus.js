@@ -1,5 +1,5 @@
 // ============================================
-// AHMAD MD - EXTRA FUN & UTILITY COMMANDS
+// AHMAD MD - EXTRA FUN & UTILITY COMMANDS (FIXED WITH VIDEO)
 // ============================================
 
 import { cmd } from '../command.js';
@@ -43,7 +43,7 @@ cmd({
         }
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/8q1qmq.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: "*🦠 Virus Scare Complete!*\n> _All in good fun!_"
         }, { quoted: mek });
 
@@ -88,7 +88,7 @@ cmd({
         }
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/q20h6q.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: "*🏦 Bank Hack Failed!*\n> _You got caught! But it's just a joke!_"
         }, { quoted: mek });
 
@@ -132,7 +132,7 @@ cmd({
         }
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/y6qmzx.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: "*📶 WiFi Hacked!*\n> _Free WiFi forever! Just kidding!_"
         }, { quoted: mek });
 
@@ -178,7 +178,7 @@ cmd({
         }
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/1pba7s.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: "*☢️ Nuclear Launch Cancelled!*\n> _World peace preserved!_"
         }, { quoted: mek });
 
@@ -224,7 +224,7 @@ cmd({
         }
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/d2a9kv.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: "*⏳ Time Travel Complete!*\n> _The future is bright!_"
         }, { quoted: mek });
 
@@ -268,7 +268,7 @@ cmd({
         }
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/ky6phx.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: "*🌑 Dark Web Access Denied!*\n> _Stay on the bright side!_"
         }, { quoted: mek });
 
@@ -313,7 +313,7 @@ cmd({
         }
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/8q1qmq.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: "*🚔 You're Free!*\n> _No criminals were caught today!_"
         }, { quoted: mek });
 
@@ -356,7 +356,7 @@ cmd({
         }
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/q20h6q.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: "*🚨 All Clear!*\n> _Stay safe, stay happy!_"
         }, { quoted: mek });
 
@@ -400,7 +400,7 @@ cmd({
         }
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/y6qmzx.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: "*🌐 Your IP is safe!*\n> _No one can track you!_"
         }, { quoted: mek });
 
@@ -444,7 +444,7 @@ cmd({
         }
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/d2a9kv.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: "*🧟 Apocalypse Cancelled!*\n> _Stay alive, stay happy!_"
         }, { quoted: mek });
 
@@ -488,7 +488,7 @@ cmd({
         }
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/1pba7s.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: "*👽 Alien Invasion Failed!*\n> _They went to Mars instead!_"
         }, { quoted: mek });
 
@@ -532,7 +532,7 @@ cmd({
         }
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/8q1qmq.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: "*⛓️ Jail Break Successful!*\n> _You're a free bird!_"
         }, { quoted: mek });
 
@@ -575,7 +575,7 @@ cmd({
         }
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/ky6phx.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: "*🛰️ Satellite Hacked!*\n> _You can see everything now! Just kidding!_"
         }, { quoted: mek });
 
@@ -618,7 +618,7 @@ cmd({
         }
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/q20h6q.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: "*🧑‍🦲 No Hair Loss Today!*\n> _Keep growing!_"
         }, { quoted: mek });
 
@@ -661,7 +661,7 @@ cmd({
         }
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/1pba7s.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: "*💣 Bomb Defused Successfully!*\n> _You're a hero!_"
         }, { quoted: mek });
 
@@ -709,7 +709,7 @@ cmd({
 > *© Powered by AHMAD TechXD*`;
 
         await conn.sendMessage(from, {
-            image: { url: "https://files.catbox.moe/ky6phx.jpg" },
+            video: { url: "https://files.catbox.moe/2owh18.mp4" },
             caption: funMenu
         }, { quoted: mek });
 
