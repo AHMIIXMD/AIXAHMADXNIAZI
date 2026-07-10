@@ -8,6 +8,7 @@ import axios from 'axios';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Helper function for small caps text
 const toSmallCaps = (text) => {
@@ -63,14 +64,12 @@ ${menuSections}
 *──╼『 ${BOT_NAME} 』╾──*
 > *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴀʜᴍᴀᴅ ʜᴀssᴀɴ*`;
 
-        // Video URL Selection
-        let videoToUse = "https://files.catbox.moe/2owh18.mp4";
+        // Image URL Selection
+        let imageToUse = "https://files.catbox.moe/ptvl03.jpg";
 
-        // 1. Menu Video Send (GIF Looping Mode)
+        // 1. Menu Image Send with Caption
         await conn.sendMessage(from, { 
-            video: { url: videoToUse },
-            mimetype: 'video/mp4',
-            gifPlayback: true,
+            image: { url: imageToUse },
             caption: dec, 
             contextInfo: { 
                 mentionedJid: [m.sender], 
