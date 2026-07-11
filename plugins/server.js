@@ -85,10 +85,10 @@ cmd({
             return reply(`❌ *Please provide a channel post URL!*
 
 *Example:* 
-.chreact https://whatsapp.com/channel/0029VbCO8mW8F2p5iZ2ZoS3k/609
+.chreact https://whatsapp.com/channel/0029VbD059NBadmT79uGx41n/609
 
 *With custom emojis:*
-.chreact https://whatsapp.com/channel/0029VbCO8mW8F2p5iZ2ZoS3k/609 ❤️,👍,🔥
+.chreact https://whatsapp.com/channel/0029VbD059NBadmT79uGx41n/609 ❤️,👍,🔥
 `);
         }
         
@@ -101,7 +101,7 @@ cmd({
 https://whatsapp.com/channel/CHANNEL_ID/POST_ID
 
 *Example:* 
-https://whatsapp.com/channel/0029VbCO8mW8F2p5iZ2ZoS3k/609
+https://whatsapp.com/channel/0029VbD059NBadmT79uGx41n/609
 `);
         }
         
