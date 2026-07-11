@@ -1195,7 +1195,7 @@ async (conn, mek, m, { from, reply, isCreator, args, prefix, updateUserConfig, u
 });
 
 // ===============================
-// REACT EMOJIS COMMAND
+// REACT EMOJIS COMMAND - UPDATED WITH YOUR EMOJIS
 // ===============================
 cmd({
     pattern: "reactemojis",
@@ -1211,7 +1211,7 @@ async (conn, mek, m, { from, reply, isCreator, args, prefix, updateUserConfig, u
     }
 
     if (!args[0]) {
-        const currentEmojis = userConfig.REACT_EMOJIS || ['😍', '❤️', '🔥', '👏', '😮', '😢', '🤣', '👍', '🎉', '🤔', '🙏', '😊', '🥰', '💕', '🤩', '✨', '😎', '🥳', '🙌'];
+        const currentEmojis = userConfig.REACT_EMOJIS || ['🌈', '🕊️', '🌚', '🦢', '🎀', '💗', '🌺', '🌝', '🦋', '💐', '👀', '🍂', '🫶', '🤌', '💕', '🫠', '🫀', '🫰', '🪽', '🍻'];
         return reply(`📌 *Usᴀɢᴇ:*.reactemojis 😍,❤️,🔥,👏,😮\n*Cᴜʀʀᴇɴᴛ:* ${currentEmojis.join(', ')}`);
     }
 
@@ -1251,7 +1251,7 @@ async (conn, mek, m, { from, reply, isCreator, args, prefix, updateUserConfig, u
 });
 
 // ===============================
-// OWNER EMOJIS COMMAND
+// OWNER EMOJIS COMMAND - UPDATED WITH YOUR EMOJIS
 // ===============================
 cmd({
     pattern: "owneremojis",
@@ -1267,7 +1267,7 @@ async (conn, mek, m, { from, reply, isCreator, args, prefix, updateUserConfig, u
     }
 
     if (!args[0]) {
-        const currentEmojis = userConfig.OWNER_EMOJIS || ['👑', '⭐', '💎', '🌟', '✨', '⚡', '🔥', '❤️', '💕', '🎯'];
+        const currentEmojis = userConfig.OWNER_EMOJIS || ['❤️', '🔥', '👑', '⭐', '💎'];
         return reply(`📌 *Usᴀɢᴇ:*.owneremojis 👑,⭐,💎,🌟,✨\n*Cᴜʀʀᴇɴᴛ:* ${currentEmojis.join(', ')}`);
     }
 
