@@ -23,21 +23,9 @@ async (conn, mek, m, {
     };
 
     if (!isGroup) return reply("❌ This command can only be used in groups.");
-    
-    // FIXED: Check admin/creator status
-    const isAdmin = m.isAdmin || isAdmins;
-    if (!isAdmin && !isCreator) {
-      return reply("❌ Only group admins can use this command.");
-    }
+    if (!isAdmins && !isCreator) return reply("❌ Only group admins can use this command.");
 
-    // FIXED: Check if participants exist
-    if (!participants || participants.length === 0) {
-      return reply("❌ No participants found in this group.");
-    }
-
-    const mentionAll = { 
-      mentions: participants.map(u => u.id) 
-    };
+    const mentionAll = { mentions: participants.map(u => u.id) };
 
     // If no message or reply is provided
     if (!q && !m.quoted) {
@@ -123,9 +111,12 @@ async (conn, mek, m, {
         }, { quoted: mek });
       }
 
-      // Otherwise, just send the text without the command name
+      // **🔴 FIX: Preserve spaces and special characters**
+      // Instead of directly sending q, we'll send it as a string with proper formatting
+      const messageText = q.toString(); // Ensure it's a string
+      
       await conn.sendMessage(from, {
-        text: q,
+        text: messageText, // Sends the message with original spaces and characters
         ...mentionAll
       }, { quoted: mek });
     }
