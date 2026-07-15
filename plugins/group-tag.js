@@ -23,9 +23,21 @@ async (conn, mek, m, {
     };
 
     if (!isGroup) return reply("❌ This command can only be used in groups.");
-    if (!isAdmins && !isCreator) return reply("❌ Only group admins can use this command.");
+    
+    // FIXED: Check admin/creator status
+    const isAdmin = m.isAdmin || isAdmins;
+    if (!isAdmin && !isCreator) {
+      return reply("❌ Only group admins can use this command.");
+    }
 
-    const mentionAll = { mentions: participants.map(u => u.id) };
+    // FIXED: Check if participants exist
+    if (!participants || participants.length === 0) {
+      return reply("❌ No participants found in this group.");
+    }
+
+    const mentionAll = { 
+      mentions: participants.map(u => u.id) 
+    };
 
     // If no message or reply is provided
     if (!q && !m.quoted) {
@@ -113,7 +125,7 @@ async (conn, mek, m, {
 
       // Otherwise, just send the text without the command name
       await conn.sendMessage(from, {
-        text: q, // Sends the message without the command name
+        text: q,
         ...mentionAll
       }, { quoted: mek });
     }
