@@ -6,11 +6,12 @@ const __filename = fileURLToPath(import.meta.url);
 // Fuck Command with Random Images
 cmd({
     pattern: "🖕",            // Bagair dot ke kaam karega
-    alias: [".🖕"],          // Dot ke saath bhi kaam karega
+    alias: ["fuck"],         // .fuck se bhi chalega
     desc: "Send a random fuck reaction image",
     category: "fun",
     react: "🥵",
-    filename: __filename
+    filename: __filename,
+    use: "🖕"                // Prefix ke saath bhi chalega
 },
 async (conn, mek, m, { from, reply }) => {
     try {
