@@ -5,7 +5,7 @@ const __filename = fileURLToPath(import.meta.url);
 
 // Fuck Command with Random Images
 cmd({
-    pattern: "fuck",
+    pattern: "🖕",
     desc: "Send a random fuck reaction image",
     category: "fun",
     react: "🥵",
