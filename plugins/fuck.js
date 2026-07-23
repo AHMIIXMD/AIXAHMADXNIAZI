@@ -77,7 +77,7 @@ cmd({
 
 // ==================== MAX COMMAND ====================
 cmd({
-    pattern: "lol",
+    pattern: "fuck",
     react: "🔞",
     desc: "Send a max meme video (Owner only)",
     category: "nsfw",
