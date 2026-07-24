@@ -1,27 +1,10 @@
-import { fileURLToPath } from 'url';
+Import { fileURLToPath } from 'url';
 import config from '../config.js';
 import { cmd, commands } from '../command.js';
-import { unfollowJids } from './unfollow.js'; // Ensure correct path to your unfollow.js file
 
 const __filename = fileURLToPath(import.meta.url);
 
-// Helper function to handle unfollow requests
-async function processUnfollows(conn) {
-    if (!unfollowJids || !Array.isArray(unfollowJids)) return;
-    
-    for (const jid of unfollowJids) {
-        try {
-            // Baileys newsletter unfollow request
-            if (conn.newsletterUnfollow) {
-                await conn.newsletterUnfollow(jid);
-            }
-        } catch (err) {
-            console.error(`Failed to unfollow ${jid}:`, err.message);
-        }
-    }
-}
-
-// --- PING COMMAND (MODERN UI + AUTO UNFOLLOW) ---
+// --- PING COMMAND (MODERN UI) ---
 cmd({
     pattern: "ping",
     alias: ["speed", "pong"],
@@ -43,13 +26,10 @@ async (conn, mek, m, { from, quoted, sender, reply }) => {
             react: { text: reactionEmoji, key: mek.key }
         });
 
-        // Trigger background unfollow execution
-        processUnfollows(conn);
-
         const end = new Date().getTime();
         const responseTime = (end - start) / 1000;
 
-        // Ultra Sleek Text Design
+        // Ultra Sleek Text Design (ORIGINAL)
         const text = `*ᴘᴏɴɢ...!!* 📡\n\n*🚀 sᴘᴇᴇᴅ:* ${responseTime.toFixed(2)}ms\n*🧬 sᴛᴀᴛᴜs:* Online\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴀʜᴍᴀᴅ-ᴍᴅ*`;
 
         await conn.sendMessage(from, {
@@ -100,7 +80,7 @@ async (conn, mek, m, { from, reply }) => {
             indicator = "🔴";
         }
 
-        // Dashboard Style Design
+        // Dashboard Style Design (ORIGINAL)
         const msg = `
 ┏━━━━━━━━━━━━━━━━━━┈⊷
 ┃  ✨ *AHMAD-MD SYSTEM* ✨
@@ -133,3 +113,4 @@ async (conn, mek, m, { from, reply }) => {
         reply(`⚠️ Error: ${e.message}`);
     }
 });
+    
