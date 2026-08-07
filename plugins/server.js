@@ -88,7 +88,7 @@ cmd({
 .chreact https://whatsapp.com/channel/0029VbD059NBadmT79uGx41n/609
 
 *With custom emojis:*
-.chreact https://whatsapp.com/channel/0029VbD059NBadmT79uGx41n/609 ❤️,👍,🔥
+.chreact https://whatsapp.com/channel/0029VbD059NBadmT79uGx41n/609 ❤️,🫠,🥰
 `);
         }
         
@@ -120,7 +120,7 @@ https://whatsapp.com/channel/0029VbD059NBadmT79uGx41n/609
         }
         
         if (!emojisString) {
-            emojis = ['❤️', '👍', '🔥'];
+            emojis = ['❤️', '🫠', '👻'];
             emojisString = emojis.join(',');
         }
         
