@@ -21,21 +21,23 @@ const toSmallCaps = (text) => {
     return text.toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
 };
 
-// --- ROYAL LUXURY CATEGORY STYLE ---
+// --- SIMPLE CLEAN CATEGORY DESIGN ---
 const formatCategory = (category, cmds) => {
     const validCmds = cmds.filter(cmd => cmd.pattern && cmd.pattern.trim() !== '');
     if (validCmds.length === 0) return ''; 
     
-    let title = `\n*◈═══〔 ${category.toUpperCase()} 〕═══◈*\n`;
-    let body = validCmds.map(cmd => `*⚡︎* ${toSmallCaps(cmd.pattern)}`).join('\n');
-    return `${title}${body}\n`;
+    let title = `\n╭───〔 *${category.toUpperCase()} MENU* 〕───\n│\n`;
+    let body = validCmds.map(cmd => `│ ⚡︎ *${toSmallCaps(cmd.pattern)}*`).join('\n');
+    let footer = `\n│\n╰───────────────────────\n`;
+    
+    return `${title}${body}${footer}`;
 };
 
 cmd({
     pattern: "menu",
     alias: ["m", "help", "allmenu"],
     category: "main",
-    react: "⚡",
+    react: "👑",
     filename: __filename
 },
 async (conn, mek, m, { from, pushname, reply }) => {
@@ -50,19 +52,19 @@ async (conn, mek, m, { from, pushname, reply }) => {
         const BOT_NAME = config.BOT_NAME || "AHMAD-MD";
         const uptime = runtime(process.uptime());
 
-        // --- ROYAL INTERFACE DESIGN ---
+        // --- UPGRADED PREMIUM INTERFACE DESIGN ---
         let dec = `
-*✨ ${BOT_NAME.toUpperCase()} ✨*
+👑 *${BOT_NAME.toUpperCase()}* 👑
 
-*╭══════════════════⊷*
-*│ 👤 OWNER:* ${config.OWNER_NAME || "Ahmad Hassan"}
-*│ 🚀 UPTIME:* ${uptime}
-*│ 📂 COMMANDS:* ${Object.keys(commands).length}
-*│ 🛠️ MODE:* ${config.MODE || "Public"}
-*╰══════════════════⊷*
+┌─── ❖ *SYSTEM INFO* ❖
+│ 👑 *Owner:* ${config.OWNER_NAME || "Ahmad Hassan"}
+│ ⏱️ *Uptime:* ${uptime}
+│ 📜 *Commands:* ${Object.keys(commands).length}
+│ 🌐 *Mode:* ${config.MODE || "Public"}
+│ 🖥️ *RAM:* ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB / ${(os.totalmem() / 1024 / 1024 / 1024).toFixed(2)} GB
+└───📌
 ${menuSections}
-*──╼『 ${BOT_NAME} 』╾──*
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴀʜᴍᴀᴅ ʜᴀssᴀɴ*`;
+> *✨ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴀʜᴍᴀᴅ ʜᴀssᴀɴ ✨*`;
 
         // Image URL Selection
         let imageToUse = "https://files.catbox.moe/ptvl03.jpg";
@@ -83,7 +85,7 @@ ${menuSections}
             } 
         }, { quoted: mek });
 
-        // 2. Audio File Send (As Audio, not Voice Note)
+        // 2. Audio File Send
         await conn.sendMessage(from, {
             audio: { url: "https://files.catbox.moe/hoi9ur.mp3" },
             mimetype: 'audio/mpeg',
