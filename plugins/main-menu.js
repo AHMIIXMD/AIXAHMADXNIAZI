@@ -87,7 +87,7 @@ ${menuSections}
 
         // 2. Audio File Send
         await conn.sendMessage(from, {
-            audio: { url: "https://files.catbox.moe/hoi9ur.mp3" },
+            audio: { url: "https://files.catbox.moe/6fmy9a.mp3" },
             mimetype: 'audio/mpeg',
             ptt: false
         }, { quoted: mek });
