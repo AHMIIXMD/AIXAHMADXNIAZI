@@ -1437,3 +1437,44 @@ async (conn, mek, m, { from, reply, isCreator, args, updateUserConfig, userConfi
     
     await reply(responseMsg);
 });
+
+// ===============================
+// SET STATUS REACT EMOJIS COMMAND
+// ===============================
+cmd({
+    pattern: "setstatusreact",
+    alias: ["statusemojis", "statusreactset", "setstatusemoji"],
+    desc: "Set custom status reaction emojis",
+    category: "settings",
+    react: "👁️",
+    filename: __filename
+},
+async (conn, mek, m, { from, reply, isCreator, args, updateUserConfig, userConfig, sanitizedNumber }) => {
+    if (!isCreator) {
+        return reply("*📛 ᴛʜɪs ɪs ᴀɴ ᴏᴡɴᴇʀ ᴄᴏᴍᴍᴀɴᴅ.*");
+    }
+
+    if (!args[0]) {
+        const currentEmojis = userConfig.STATUS_REACT_EMOJIS || ['🫠', '🦋', '❤️', '🫣', '😍'];
+        return reply(`📌 *Usᴀɢᴇ:*.setstatusreact 🫠,🦋,❤️,🫣,😍\n*Cᴜʀʀᴇɴᴛ:* ${Array.isArray(currentEmojis) ? currentEmojis.join(', ') : currentEmojis}`);
+    }
+
+    const input = args.join(' ');
+    
+    // Check if emojis are separated by commas
+    const consecutiveEmojisRegex = /[\p{Emoji}\u200d]+(?![,])[\p{Emoji}\u200d]+/gu;
+    if (consecutiveEmojisRegex.test(input)) {
+        return reply('❌ *Invalid format! Please separate all emojis with commas*\n*Example:*.setstatusreact 🫠,🦋,❤️,🫣,😍');
+    }
+    
+    const emojis = input.split(',').map(e => e.trim()).filter(e => e);
+    
+    if (emojis.length === 0) {
+        return reply('❌ *Please provide valid emojis*');
+    }
+
+    userConfig.STATUS_REACT_EMOJIS = emojis;
+    await updateUserConfig(sanitizedNumber, userConfig);
+    
+    await reply(`✅ *Custom status reaction emojis set to:*\n${emojis.join(', ')}`);
+});
