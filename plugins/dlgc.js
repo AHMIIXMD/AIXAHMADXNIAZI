@@ -6,19 +6,15 @@ const __filename = fileURLToPath(import.meta.url);
 cmd({
     pattern: "delgcstatus",
     alias: ["delgstatus", "delstatus"],
-    desc: "Delete group status for everyone (Admin & Owner only).",
+    desc: "Delete group status for everyone.",
     category: "group",
     react: "🗑️",
     filename: __filename
-}, async (conn, mek, m, { from, reply, isCreator, isAdmins, isBotAdmin }) => {
+}, async (conn, mek, m, { from, reply, isCreator, isAdmins }) => {
 
-    // ── Check if User is Owner or Group Admin ──
+    // ── Owner ya Admin verification ──
     if (!isCreator && !isAdmins) {
         return reply("❌ This command is only for *Group Admins* or the *Bot Owner*!");
-    }
-
-    if (!isBotAdmin) {
-        return reply("❌ *Please make the bot an admin first to delete messages for everyone!*");
     }
 
     try {
@@ -28,7 +24,6 @@ cmd({
             return reply("⚠️ *Please reply to the group status or message you want to delete!*");
         }
 
-        // Target message ki key banana taaki delete for everyone chal sake
         const keyToDelete = {
             remoteJid: from,
             fromMe: quotedMsg.fromMe || false,
@@ -36,10 +31,10 @@ cmd({
             participant: quotedMsg.sender
         };
 
-        // Delete for Everyone command
+        // Message delete trigger
         await conn.sendMessage(from, { delete: keyToDelete });
 
-        return reply("✅ *Status/Message successfully deleted for everyone by Admin!*");
+        return reply("✅ *Status/Message delete request sent!*");
 
     } catch (error) {
         reply(`❌ *Failed to delete:* ${error.message}`);
