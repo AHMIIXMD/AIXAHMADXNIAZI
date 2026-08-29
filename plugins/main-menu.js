@@ -10,29 +10,6 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Helper function for small caps text
-const toSmallCaps = (text) => {
-    if (!text || typeof text !== 'string') return '';
-    const smallCapsMap = {
-        'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 'i': 'ɪ',
-        'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 'q': 'ǫ', 'r': 'ʀ',
-        's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 'y': 'ʏ', 'z': 'ᴢ'
-    };
-    return text.toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
-};
-
-// --- SIMPLE CLEAN CATEGORY DESIGN ---
-const formatCategory = (category, cmds) => {
-    const validCmds = cmds.filter(cmd => cmd.pattern && cmd.pattern.trim() !== '');
-    if (validCmds.length === 0) return ''; 
-    
-    let title = `\n╭───〔 *${category.toUpperCase()} MENU* 〕───\n│\n`;
-    let body = validCmds.map(cmd => `│ ⚡︎ *${toSmallCaps(cmd.pattern)}*`).join('\n');
-    let footer = `\n│\n╰───────────────────────\n`;
-    
-    return `${title}${body}${footer}`;
-};
-
 cmd({
     pattern: "menu",
     alias: ["m", "help", "allmenu"],
@@ -42,34 +19,12 @@ cmd({
 },
 async (conn, mek, m, { from, pushname, reply }) => {
     try {
-        const categories = [...new Set(Object.values(commands).map(c => c.category))].filter(Boolean);
-        let menuSections = '';
-        categories.forEach(cat => {
-            const catCmds = Object.values(commands).filter(c => c.category === cat);
-            menuSections += formatCategory(cat, catCmds);
-        });
-
-        const BOT_NAME = config.BOT_NAME || "AHMAD-MD";
-        const uptime = runtime(process.uptime());
-
-        // --- UPGRADED PREMIUM INTERFACE DESIGN ---
-        let dec = `
-👑 *${BOT_NAME.toUpperCase()}* 👑
-
-┌─── ❖ *SYSTEM INFO* ❖
-│ 👑 *Owner:* ${config.OWNER_NAME || "Ahmad Hassan"}
-│ ⏱️ *Uptime:* ${uptime}
-│ 📜 *Commands:* ${Object.keys(commands).length}
-│ 🌐 *Mode:* ${config.MODE || "Public"}
-│ 🖥️ *RAM:* ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB / ${(os.totalmem() / 1024 / 1024 / 1024).toFixed(2)} GB
-└───📌
-${menuSections}
-> *✨ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴀʜᴍᴀᴅ ʜᴀssᴀɴ ✨*`;
+        let dec = `AHMAD MD BOT HACK BYE JUNAID`;
 
         // Image URL Selection
         let imageToUse = "https://files.catbox.moe/ptvl03.jpg";
 
-        // 1. Menu Image Send with Caption
+        // 1. Send Image with Custom Text
         await conn.sendMessage(from, { 
             image: { url: imageToUse },
             caption: dec, 
