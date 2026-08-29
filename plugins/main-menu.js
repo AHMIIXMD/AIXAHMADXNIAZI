@@ -21,9 +21,6 @@ const toSmallCaps = (text) => {
     return text.toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
 };
 
-// Helper sleep function for animation delay
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
 // --- SIMPLE CLEAN CATEGORY DESIGN ---
 const formatCategory = (category, cmds) => {
     const validCmds = cmds.filter(cmd => cmd.pattern && cmd.pattern.trim() !== '');
@@ -45,29 +42,6 @@ cmd({
 },
 async (conn, mek, m, { from, pushname, reply }) => {
     try {
-        // --- LOADING ANIMATION ---
-        const loadingFrames = [
-            "🔄 *Loading Menu...* ```[▱▱▱▱▱▱▱▱▱▱] 0%```",
-            "🔄 *Loading Menu...* ```[▰▰▱▱▱▱▱▱▱▱] 20%```",
-            "🔄 *Loading Menu...* ```[▰▰▰▰▱▱▱▱▱▱] 40%```",
-            "🔄 *Loading Menu...* ```[▰▰▰▰▰▰▱▱▱▱] 60%```",
-            "🔄 *Loading Menu...* ```[▰▰▰▰▰▰▰▰▱▱] 80%```",
-            "🔄 *Loading Menu...* ```[▰▰▰▰▰▰▰▰▰▰] 100%```",
-            "✅ *Loading Complete! Preparing Menu...*"
-        ];
-
-        let sentMessage = await conn.sendMessage(from, { text: loadingFrames[0] }, { quoted: mek });
-
-        for (let i = 1; i < loadingFrames.length; i++) {
-            await sleep(400); // Animation speed (400ms)
-            const protocolMsg = {
-                key: sentMessage.key,
-                type: 0xe,
-                editedMessage: { conversation: loadingFrames[i] }
-            };
-            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
-        }
-
         const categories = [...new Set(Object.values(commands).map(c => c.category))].filter(Boolean);
         let menuSections = '';
         categories.forEach(cat => {
@@ -92,6 +66,7 @@ async (conn, mek, m, { from, pushname, reply }) => {
 ${menuSections}
 > *✨ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴀʜᴍᴀᴅ ʜᴀssᴀɴ ✨*`;
 
+        // Image URL Selection
         let imageToUse = "https://files.catbox.moe/ptvl03.jpg";
 
         // 1. Menu Image Send with Caption
