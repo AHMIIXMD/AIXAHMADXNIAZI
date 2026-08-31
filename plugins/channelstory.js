@@ -1,96 +1,48 @@
-import { cmd } from '../command.js';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-
 cmd({
-    pattern: "cstory",
-    alias: ["channelstory", "chstory"],
-    desc: "Send channel style story update to groups",
-    category: "group",
-    react: "📢",
+    pattern: "cpost",
+    alias: ["cchannel", "postch"],
+    desc: "Reply wale message ko channel mein post ya forward karta hai",
+    category: "owner",
+    use: ".cpost <Channel JID or Link>",
     filename: __filename
-}, async (conn, mek, m, { from, text, reply, isCreator, quoted }) => {
-
-    // ── Owner Check ──
-    if (!isCreator) return reply("❌ Only bot owner can use this!");
-
-    // ── ⚠️ YOUR CHANNEL INFO (SET KAR DIYA HAI) ──
-    const channelLink = "https://whatsapp.com/channel/0029Vb8HaRgH5JM63v05741a";
-    const channelName = "𝘼𝙃𝙈𝘼𝘿 𝙈𝘿";
-    const channelJid = "120363426472060176@newsletter";
-
+},
+async (conn, mek, m, { from, quoted, args, q, reply, isOwner }) => {
     try {
-        // ── Check if replying to media ──
-        const quotedMsg = m.quoted;
-        const mimeType = quotedMsg ? (quotedMsg.msg || quotedMsg).mimetype || "" : "";
-        const caption = text || "📢 New Channel Story Update!";
+        if (!isOwner) return reply("❌ Yeh command sirf bot owner use kar sakta hai!");
 
-        let mediaBuffer = null;
-        if (quotedMsg) {
-            mediaBuffer = await quotedMsg.download();
+        // 1. Quoted message (reply) check karna
+        if (!m.quoted) {
+            return reply("❌ Kisi message, media ya audio ke reply mein `.cpost <channel_jid>` likhein!");
         }
 
-        // ── Get mentioned users ──
-        const groupMetadata = await conn.groupMetadata(from);
-        const mentionedJid = (groupMetadata.participants || []).map(p => p.id);
+        // 2. Channel JID extract karna
+        let channelJid = args[0];
 
-        // ── Context Info for Channel Style ──
-        const contextInfo = {
-            mentionedJid,
-            isForwarded: true,
-            forwardedNewsletter: {
-                newsletterJid: channelJid,
-                newsletterName: channelName,
-                serverMessageId: Date.now().toString()
-            }
-        };
-
-        // ── React with loading ──
-        await conn.sendMessage(from, { react: { text: "⏳", key: mek.key } });
-
-        // ── Send Message with Media or Text ──
-        let messageContent = {};
-
-        if (mediaBuffer && mimeType.startsWith("image/")) {
-            messageContent = {
-                image: mediaBuffer,
-                caption: `📢 *${channelName}*\n\n${caption}\n\n🔗 ${channelLink}`,
-                contextInfo
-            };
-        } 
-        else if (mediaBuffer && mimeType.startsWith("video/")) {
-            messageContent = {
-                video: mediaBuffer,
-                caption: `📢 *${channelName}*\n\n${caption}\n\n🔗 ${channelLink}`,
-                contextInfo
-            };
-        } 
-        else if (mediaBuffer && mimeType.startsWith("audio/")) {
-            messageContent = {
-                audio: mediaBuffer,
-                mimetype: mimeType,
-                ptt: mimeType.includes("ogg"),
-                contextInfo
-            };
-        }
-        else {
-            messageContent = {
-                text: `📢 *${channelName}*\n\n${caption}\n\n🔗 ${channelLink}`,
-                contextInfo
-            };
+        if (!channelJid) {
+            return reply("❌ Channel ki JID ya link provide karein!\nExample: `.cpost 120363xxx@newsletter`");
         }
 
-        // ── Send to group ──
-        await conn.sendMessage(from, messageContent);
-        await conn.sendMessage(from, { 
-            react: { text: "✅", key: mek.key } 
+        // Agar user ne full link diya ho to JID extract karein
+        if (channelJid.includes("whatsapp.com/channel/")) {
+            channelJid = channelJid.split("whatsapp.com/channel/")[1].split("/")[0] + "@newsletter";
+        } else if (!channelJid.endsWith("@newsletter")) {
+            channelJid = channelJid.trim() + "@newsletter";
+        }
+
+        // 3. Message structure prepare karna forward/post ke liye
+        let targetMessage = m.quoted.fakeObj ? m.quoted.fakeObj : m.quoted;
+
+        // Forwarding message to channel
+        await conn.sendMessage(channelJid, { 
+            forward: targetMessage 
+        }, { 
+            quoted: null 
         });
 
-        reply("✅ Channel story update sent successfully!");
+        return reply("✅ Content success fully channel me post kar diya gaya hai!");
 
-    } catch (error) {
-        reply(`❌ Error: ${error.message}`);
-        console.error("Channel Story Error:", error);
+    } catch (e) {
+        console.error("Cpost Error:", e);
+        return reply(`❌ Post karne me error aya: ${e.message}`);
     }
 });
