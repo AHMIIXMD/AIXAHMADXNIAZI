@@ -8,8 +8,8 @@ import { Sticker, StickerTypes } from "wa-sticker-formatter";
 
 const __filename = fileURLToPath(import.meta.url);
 
-// Telegram Bot Token - Updated with your new bot token
-const BOT_TOKEN = '8909762782:AAE7E1xoBFH-5sJeJoAcoUtC05UTlcIcIHU';
+// Telegram Bot Token - UPDATED WITH NEW BOT TOKEN
+const BOT_TOKEN = '8515677844:AAGa0LaHgZtAKmieSm6gLhTyNn1fHfW4I60';
 
 cmd({
     pattern: "tsticker",
