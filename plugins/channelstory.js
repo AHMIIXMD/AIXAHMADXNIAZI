@@ -1,48 +1,62 @@
+import { cmd } from '../command.js';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+
 cmd({
     pattern: "cpost",
-    alias: ["cchannel", "postch"],
-    desc: "Reply wale message ko channel mein post ya forward karta hai",
+    alias: ["postch", "cchannel"],
+    desc: "Forward quoted message or media directly to a channel.",
     category: "owner",
-    use: ".cpost <Channel JID or Link>",
+    react: "📢",
     filename: __filename
-},
-async (conn, mek, m, { from, quoted, args, q, reply, isOwner }) => {
+}, async (conn, mek, m, { from, text, reply, isCreator, args }) => {
+
+    // ── Owner Check ──
+    if (!isCreator) return reply("❌ This command is only for the *bot owner*!");
+
     try {
-        if (!isOwner) return reply("❌ Yeh command sirf bot owner use kar sakta hai!");
+        const quotedMsg = m.quoted;
 
-        // 1. Quoted message (reply) check karna
-        if (!m.quoted) {
-            return reply("❌ Kisi message, media ya audio ke reply mein `.cpost <channel_jid>` likhein!");
+        // 1. Quoted message check
+        if (!quotedMsg) {
+            return reply("❌ *Usage:* Reply to any text, image, video, or audio message with `.cpost <Channel JID or Link>`");
         }
 
-        // 2. Channel JID extract karna
-        let channelJid = args[0];
+        // 2. Channel JID or Link target extract karna
+        let targetJid = args[0] || text?.trim();
 
-        if (!channelJid) {
-            return reply("❌ Channel ki JID ya link provide karein!\nExample: `.cpost 120363xxx@newsletter`");
+        if (!targetJid) {
+            return reply(
+                `📢 *Channel Post Usage:*\n\n` +
+                `*Via JID:* \`.cpost 120363xxx@newsletter\`\n` +
+                `*Via Link:* \`.cpost https://whatsapp.com/channel/xxx\`\n\n` +
+                `━━━━━━━━━━━━━━━━━━\n` +
+                `~ *𝐀͢ͱ꧊ϻ͒͜𝛂͜𝛛🚩*`
+            );
         }
 
-        // Agar user ne full link diya ho to JID extract karein
-        if (channelJid.includes("whatsapp.com/channel/")) {
-            channelJid = channelJid.split("whatsapp.com/channel/")[1].split("/")[0] + "@newsletter";
-        } else if (!channelJid.endsWith("@newsletter")) {
-            channelJid = channelJid.trim() + "@newsletter";
+        // Channel link parsing logic
+        if (targetJid.includes("whatsapp.com/channel/")) {
+            targetJid = targetJid.split("whatsapp.com/channel/")[1].split("/")[0] + "@newsletter";
+        } else if (!targetJid.endsWith("@newsletter")) {
+            targetJid = targetJid.trim() + "@newsletter";
         }
 
-        // 3. Message structure prepare karna forward/post ke liye
-        let targetMessage = m.quoted.fakeObj ? m.quoted.fakeObj : m.quoted;
+        await conn.sendMessage(from, { react: { text: "⏳", key: mek.key } });
 
-        // Forwarding message to channel
-        await conn.sendMessage(channelJid, { 
+        // 3. Quoted object payload forward karna
+        const targetMessage = quotedMsg.fakeObj ? quotedMsg.fakeObj : quotedMsg;
+
+        await conn.sendMessage(targetJid, { 
             forward: targetMessage 
-        }, { 
-            quoted: null 
         });
 
-        return reply("✅ Content success fully channel me post kar diya gaya hai!");
+        await conn.sendMessage(from, { react: { text: "✅", key: mek.key } });
+        return reply("✅ *Successfully forwarded to the channel!*");
 
-    } catch (e) {
-        console.error("Cpost Error:", e);
-        return reply(`❌ Post karne me error aya: ${e.message}`);
+    } catch (error) {
+        console.error("Cpost Error:", error);
+        reply(`❌ *Error:* ${error.message}`);
     }
 });
