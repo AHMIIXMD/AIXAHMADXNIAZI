@@ -10,29 +10,6 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Helper function for small caps text
-const toSmallCaps = (text) => {
-    if (!text || typeof text !== 'string') return '';
-    const smallCapsMap = {
-        'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 'i': 'ɪ',
-        'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 'q': 'ǫ', 'r': 'ʀ',
-        's': 's', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 'y': 'ʏ', 'z': 'ᴢ'
-    };
-    return text.toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
-};
-
-// --- SIMPLE CLEAN CATEGORY DESIGN ---
-const formatCategory = (category, cmds) => {
-    const validCmds = cmds.filter(cmd => cmd.pattern && cmd.pattern.trim() !== '');
-    if (validCmds.length === 0) return ''; 
-    
-    let title = `\n╭───〔 *${category.toUpperCase()} MENU* 〕───\n│\n`;
-    let body = validCmds.map(cmd => `│ ⚡︎ *${toSmallCaps(cmd.pattern)}*`).join('\n');
-    let footer = `\n│\n╰───────────────────────\n`;
-    
-    return `${title}${body}${footer}`;
-};
-
 cmd({
     pattern: "menu",
     alias: ["m", "help", "allmenu"],
@@ -42,60 +19,74 @@ cmd({
 },
 async (conn, mek, m, { from, pushname, reply }) => {
     try {
-        const categories = [...new Set(Object.values(commands).map(c => c.category))].filter(Boolean);
-        let menuSections = '';
-        categories.forEach(cat => {
-            const catCmds = Object.values(commands).filter(c => c.category === cat);
-            menuSections += formatCategory(cat, catCmds);
+        const uptime = runtime(process.uptime());
+        const totalCommands = Object.keys(commands).length;
+        
+        // --- 1. SENDING BANNER IMAGE FIRST ---
+        // Replace this URL with your custom banner image URL
+        let bannerImage = "https://files.catbox.moe/ptvl03.jpg";
+        
+        // Use a slight delay to ensure it sends before the text
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        await conn.sendMessage(from, { 
+            image: { url: bannerImage }
         });
 
-        const BOT_NAME = config.BOT_NAME || "AHMAD-MD";
-        const uptime = runtime(process.uptime());
-
-        // --- UPGRADED PREMIUM INTERFACE DESIGN (CENTERED) ---
-        let dec = `
-👑 *${BOT_NAME.toUpperCase()}* 👑
+        // --- 2. SENDING PRECISE TEXT MENU SECOND (As per image_0.png) ---
+        // Formatting text to match the exact look: Bold, emojis, newlines, and bullet style
+        let preciseMenu = `
+👑 *${config.BOT_NAME || "AHMAD"}* 👑
 
        *بِسْمِ اللّٰہِ الرَّحْمٰنِ الرَّحِیمِ*
      *اِیَّاکَ نَعۡبُدُ وَ اِیَّاکَ نَسۡتَعِیۡنُ* ☝️
 
 ┌─── ❖
-│ 👑 *Owner:* ${config.OWNER_NAME || "Ahmad Hassan"}
+│ 👑 *Owner:* *${config.OWNER_NAME || "AHMAD"}* 🚩
 │ ⏱️ *Uptime:* ${uptime}
-│ 📜 *Commands:* ${Object.keys(commands).length}
-│ 🌐 *Mode:* ${config.MODE || "Public"}
+│ 📜 *Commands:* ${totalCommands}
+│ 🌐 *Mode:* ${config.MODE || "public"}
 │ 🖥️ *RAM:* ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB / ${(os.totalmem() / 1024 / 1024 / 1024).toFixed(2)} GB
 └───📌
-${menuSections}
+
+[ ISLAMIC MENU ]
+
+⚡︎ *DUA_FOR_...*
+⚡︎ *ALLAH_NAMES*
+⚡︎ *QURAN_VERSES*
+⚡︎ *HADEES*
+⚡︎ *DURUD*
+⚡︎ *DUAS*
+
 > *✨ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴀʜᴍᴀᴅ ʜᴀssᴀɴ ✨*`;
 
-        // Image URL Selection
-        let imageToUse = "https://files.catbox.moe/ptvl03.jpg";
-
-        // 1. Menu Image Send with Caption
+        // Send text menu with specific context info (newsletter info, etc.)
         await conn.sendMessage(from, { 
-            image: { url: imageToUse },
-            caption: dec, 
+            text: preciseMenu,
             contextInfo: { 
-                mentionedJid: [m.sender], 
-                forwardingScore: 999, 
+                mentionedJid: [m.sender],
                 isForwarded: true, 
+                forwardingScore: 999, 
                 forwardedNewsletterMessageInfo: { 
                     newsletterJid: '120363426472060176@newsletter', 
                     newsletterName: "AHMADTech", 
                     serverMessageId: 143 
                 } 
-            } 
+            }
         }, { quoted: mek });
 
-        // 2. Audio File Send
+        // --- 3. OPTIONAL: AUDIO PLAYBACK ---
+        // (Uncomment if you want to keep the audio message part)
+        /*
         await conn.sendMessage(from, {
             audio: { url: "https://files.catbox.moe/yvvzji.mp3" },
             mimetype: 'audio/mpeg',
             ptt: false
         }, { quoted: mek });
+        */
 
     } catch (e) { 
+        console.error("Error in menu command:", e);
         reply(`Error: ${e.message}`); 
     } 
 });
