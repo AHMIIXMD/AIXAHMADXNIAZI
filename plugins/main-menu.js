@@ -56,8 +56,8 @@ async (conn, mek, m, { from, pushname, reply }) => {
         let dec = `
 👑 *${BOT_NAME.toUpperCase()}* 👑
 
-*بِسْمِ اللّٰہِ الرَّحْمٰنِ الرَّحِیمِ*
-*اِیَّاکَ نَعۡبُدُ وَ اِیَّاکَ نَسۡتَعِیۡنُ*☝️
+   *بِسْمِ اللّٰہِ الرَّحْمٰنِ الرَّحِیمِ*
+ *اِیَّاکَ نَعۡبُدُ وَ اِیَّاکَ نَسۡتَعِیۡنُ*☝️
 
 ┌─── ❖
 │ 👑 *Owner:* ${config.OWNER_NAME || "Ahmad Hassan"}
@@ -90,7 +90,7 @@ ${menuSections}
 
         // 2. Audio File Send
         await conn.sendMessage(from, {
-            audio: { url: "https://files.catbox.moe/6fmy9a.mp3" },
+            audio: { url: "https://files.catbox.moe/yvvzji.mp3" },
             mimetype: 'audio/mpeg',
             ptt: false
         }, { quoted: mek });
