@@ -56,7 +56,8 @@ async (conn, mek, m, { from, pushname, reply }) => {
         let dec = `
 👑 *${BOT_NAME.toUpperCase()}* 👑
 
-┌─── ❖ *SYSTEM INFO* ❖
+┌─── ❖  ‍ ‍ ‍‍ ‍ ‍‍ ‍ ‍ ￶                              *بِسْمِ اللّٰہِ الرَّحْمٰنِ الرَّحِیمِ*
+                                     *اِیَّاکَ نَعۡبُدُ وَ اِیَّاکَ نَسۡتَعِیۡنُ*☝️ ❖
 │ 👑 *Owner:* ${config.OWNER_NAME || "Ahmad Hassan"}
 │ ⏱️ *Uptime:* ${uptime}
 │ 📜 *Commands:* ${Object.keys(commands).length}
