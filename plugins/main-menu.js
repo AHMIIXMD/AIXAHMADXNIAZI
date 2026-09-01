@@ -54,7 +54,7 @@ async (conn, mek, m, { from, pushname, reply }) => {
 
         // --- UPGRADED PREMIUM INTERFACE DESIGN (CENTERED) ---
         let dec = `
-                👑 *${BOT_NAME.toUpperCase()}* 👑
+👑 *${BOT_NAME.toUpperCase()}* 👑
 
        *بِسْمِ اللّٰہِ الرَّحْمٰنِ الرَّحِیمِ*
      *اِیَّاکَ نَعۡبُدُ وَ اِیَّاکَ نَسۡتَعِیۡنُ* ☝️
