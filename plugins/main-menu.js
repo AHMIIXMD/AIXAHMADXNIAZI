@@ -52,12 +52,12 @@ async (conn, mek, m, { from, pushname, reply }) => {
         const BOT_NAME = config.BOT_NAME || "AHMAD-MD";
         const uptime = runtime(process.uptime());
 
-        // --- UPGRADED PREMIUM INTERFACE DESIGN ---
+        // --- UPGRADED PREMIUM INTERFACE DESIGN (CENTERED) ---
         let dec = `
-👑 *${BOT_NAME.toUpperCase()}* 👑
+                👑 *${BOT_NAME.toUpperCase()}* 👑
 
        *بِسْمِ اللّٰہِ الرَّحْمٰنِ الرَّحِیمِ*
-     *اِیَّاکَ نَعۡبُدُ وَ اِیَّاکَ نَسۡتَعِیۡنُ*☝️
+     *اِیَّاکَ نَعۡبُدُ وَ اِیَّاکَ نَسۡتَعِیۡنُ* ☝️
 
 ┌─── ❖
 │ 👑 *Owner:* ${config.OWNER_NAME || "Ahmad Hassan"}
