@@ -17,26 +17,26 @@ const wallpaperUrls = [
     'https://files.catbox.moe/acxpyc.jpg', 'https://files.catbox.moe/b4edqi.jpg'
 ];
 
-// Loop to generate commands animewallpaper1 to animewallpaper20 with AW aliases
-wallpaperUrls.forEach((url, index) => {
-    const wallNum = index + 1;
-    cmd({
-        pattern: `animewallpaper${wallNum}`,
-        alias: [`aw${wallNum}`], // Short commands like aw1, aw2, etc.
-        desc: `Get anime wallpaper ${wallNum}`,
-        category: "anime",
-        react: "🖼️",
-        filename: __filename
-    },
-    async (conn, mek, m, { from, reply }) => {
-        try {
-            await conn.sendMessage(from, { 
-                image: { url: url }, 
-                caption: `*Anime Wallpaper ${wallNum}*\n\n*_powered by 𝐀͢ͱ꧊ϻ͒͜𝛂͜𝛛🚩_*` 
-            }, { quoted: mek });
-        } catch (e) {
-            console.error(`Error in animewallpaper${wallNum} command:`, e);
-            await reply("Failed to send wallpaper. Please try again.");
-        }
-    });
+// Single command to pick a random wallpaper
+cmd({
+    pattern: "animewallpaper",
+    alias: ["aw", "animewall", "wallpaper"],
+    desc: "Get a random anime wallpaper image",
+    category: "anime",
+    react: "🖼️",
+    filename: __filename
+},
+async (conn, mek, m, { from, reply }) => {
+    try {
+        // Array me se random wallpaper URL pick karne ke liye
+        const randomUrl = wallpaperUrls[Math.floor(Math.random() * wallpaperUrls.length)];
+
+        await conn.sendMessage(from, { 
+            image: { url: randomUrl }, 
+            caption: `*Random Anime Wallpaper*\n\n*_powered by 𝐀͢ͱ꧊ϻ͒͜𝛂͜𝛛🚩_*` 
+        }, { quoted: mek });
+    } catch (e) {
+        console.error("Error in animewallpaper command:", e);
+        await reply("Failed to send wallpaper. Please try again.");
+    }
 });
