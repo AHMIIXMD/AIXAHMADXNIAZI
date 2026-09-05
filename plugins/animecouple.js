@@ -20,24 +20,26 @@ const coupleUrls = [
     'https://files.catbox.moe/80nnf2.jpg'
 ];
 
-// Loop to generate commands animecouple1 to animecouple25
-coupleUrls.forEach((url, index) => {
-    cmd({
-        pattern: `animecouple${index + 1}`,
-        desc: `Get anime couple image ${index + 1}`,
-        category: "anime",
-        react: "👩‍❤️‍👨",
-        filename: __filename
-    },
-    async (conn, mek, m, { from, reply }) => {
-        try {
-            await conn.sendMessage(from, { 
-                image: { url: url }, 
-                caption: `*Anime Couple ${index + 1}*\n\n*_powered by 𝐀͢ͱ꧊ϻ͒͜𝛂͜𝛛🚩_*` 
-            }, { quoted: mek });
-        } catch (e) {
-            console.error(`Error in animecouple${index + 1} command:`, e);
-            await reply("Failed to send image. Please try again.");
-        }
-    });
+// Single command to pick a random couple image
+cmd({
+    pattern: "animecouple",
+    alias: ["couple", "couples"],
+    desc: "Get a random anime couple image",
+    category: "anime",
+    react: "👩‍❤️‍👨",
+    filename: __filename
+},
+async (conn, mek, m, { from, reply }) => {
+    try {
+        // Array me se random image URL select karne ke liye
+        const randomUrl = coupleUrls[Math.floor(Math.random() * coupleUrls.length)];
+
+        await conn.sendMessage(from, { 
+            image: { url: randomUrl }, 
+            caption: `*Random Anime Couple*\n\n*_powered by 𝐀͢ͱ꧊ϻ͒͜𝛂͜𝛛🚩_*` 
+        }, { quoted: mek });
+    } catch (e) {
+        console.error("Error in animecouple command:", e);
+        await reply("Failed to send image. Please try again.");
+    }
 });
