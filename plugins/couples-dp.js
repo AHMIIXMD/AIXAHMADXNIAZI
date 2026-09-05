@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 
 cmd({
   pattern: "cpp",
-  alias: ["couplepp", "couplepic", "couple"],
+  alias: ["couplepic", "couple"],
   react: "💑",
   desc: "Get matching couples profile pictures.",
   category: "utility",
