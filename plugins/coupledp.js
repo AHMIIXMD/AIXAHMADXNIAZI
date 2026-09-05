@@ -31,27 +31,28 @@ const coupleDpUrls = {
 
 const caption = `*_Powered by 𝐀͢ͱ꧊ϻ͒͜𝛂͜𝛛🚩_*`;
 
-// Sirf ek loop jo URLs se direct patterns generate karega
-Object.keys(coupleDpUrls).forEach((key, index) => {
-    const num = index + 1;
-    cmd({
-        pattern: `coupledp${num}`,
-        alias: [`cp${num}`],
-        desc: `Send Couple DP ${num}`,
-        category: "coupledp",
-        react: "💑",
-        filename: __filename
-    },
-    async (conn, mek, m, { from, reply }) => {
-        try {
-            await conn.sendMessage(from, {
-                image: { url: coupleDpUrls[key] },
-                mimetype: 'image/jpeg',
-                caption: caption
-            }, { quoted: mek });
-        } catch (e) {
-            console.error(`Error in coupledp${num}:`, e);
-            await reply("Failed to send image. Please try again.");
-        }
-    });
+// Single command for random Couple DP
+cmd({
+    pattern: "coupledp",
+    alias: ["cp", "couplepic", "cdp"],
+    desc: "Get a random Couple DP image",
+    category: "coupledp",
+    react: "💑",
+    filename: __filename
+},
+async (conn, mek, m, { from, reply }) => {
+    try {
+        // Convert object values into an array and select a random URL
+        const urlsArray = Object.values(coupleDpUrls);
+        const randomUrl = urlsArray[Math.floor(Math.random() * urlsArray.length)];
+
+        await conn.sendMessage(from, {
+            image: { url: randomUrl },
+            mimetype: 'image/jpeg',
+            caption: caption
+        }, { quoted: mek });
+    } catch (e) {
+        console.error("Error in coupledp command:", e);
+        await reply("Failed to send image. Please try again.");
+    }
 });
