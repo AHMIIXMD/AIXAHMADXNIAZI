@@ -70,7 +70,7 @@ ${menuSections}
 > *✨ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴀʜᴍᴀᴅ ʜᴀssᴀɴ ✨*`;
 
         // Image URL Selection
-        let imageToUse = "https://files.catbox.moe/fqevo1.png";
+        let imageToUse = "https://files.catbox.moe/ptvl03.jpg";
 
         // 1. Menu Image Send with Caption
         await conn.sendMessage(from, { 
