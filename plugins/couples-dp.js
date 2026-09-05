@@ -1,4 +1,4 @@
-import { cmd } from "../command.js";
+Import { cmd } from "../command.js";
 import axios from "axios";
 import { fileURLToPath } from 'url';
 
@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 
 cmd({
   pattern: "cpp",
-  alias: ["couplepic", "couple"],
+  alias: ["couplepp", "couplepic", "couple"],
   react: "💑",
   desc: "Get matching couples profile pictures.",
   category: "utility",
@@ -51,3 +51,4 @@ cmd({
     await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
   }
 });
+
