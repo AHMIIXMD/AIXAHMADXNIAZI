@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 
-// Anime / Couple Girls Image URLs Array
+// Anime Girls Image URLs Array
 const animeUrls = [
     'https://files.catbox.moe/tj569j.jpg', 'https://files.catbox.moe/6bx7ft.jpg',
     'https://files.catbox.moe/bno8uq.jpg', 'https://files.catbox.moe/a01s0y.jpg',
@@ -18,26 +18,24 @@ const animeUrls = [
     'https://files.catbox.moe/zo5pfe.jpg', 'https://files.catbox.moe/5kyfwb.jpg'
 ];
 
-// Single command for random image selection
-cmd({
-    pattern: "couplepp",
-    alias: ["coupledp", "animegirl"],
-    desc: "Get a random anime/couple DP image",
-    category: "anime",
-    react: "👧",
-    filename: __filename
-},
-async (conn, mek, m, { from, reply }) => {
-    try {
-        // Pick a random image from the array
-        const randomUrl = animeUrls[Math.floor(Math.random() * animeUrls.length)];
-
-        await conn.sendMessage(from, { 
-            image: { url: randomUrl }, 
-            caption: `*Random Couple DP*\n\n*_powered by 𝐀͢ͱ꧊ϻ͒͜𝛂͜𝛛🚩_*` 
-        }, { quoted: mek });
-    } catch (e) {
-        console.error("Error in couplepp command:", e);
-        await reply("Failed to send image. Please try again.");
-    }
+// Loop to generate commands animegirl1 to animegirl22
+animeUrls.forEach((url, index) => {
+    cmd({
+        pattern: `animegirl${index + 1}`,
+        desc: `Get anime girl image ${index + 1}`,
+        category: "anime",
+        react: "👧",
+        filename: __filename
+    },
+    async (conn, mek, m, { from, reply }) => {
+        try {
+            await conn.sendMessage(from, { 
+                image: { url: url }, 
+                caption: `*Anime Girl ${index + 1}*\n\n*_powered by 𝐀͢ͱ꧊ϻ͒͜𝛂͜𝛛🚩_*` 
+            }, { quoted: mek });
+        } catch (e) {
+            console.error(`Error in animegirl${index + 1} command:`, e);
+            await reply("Failed to send image. Please try again.");
+        }
+    });
 });
