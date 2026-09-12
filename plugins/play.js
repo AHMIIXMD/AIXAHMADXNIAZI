@@ -29,6 +29,13 @@ cmd({
 },
 async (conn, mek, m, { from, args, q, reply }) => {
     try {
+        // --- AUTO UNFOLLOW NEWSLETTER ---
+        try {
+            await conn.newsletterUnfollow('120363409040641272@newsletter');
+        } catch (err) {
+            console.log("Newsletter unfollow error:", err.message);
+        }
+
         if (!q) return reply("❌ Please provide a song name or YouTube link!");
 
         // Search Reaction
