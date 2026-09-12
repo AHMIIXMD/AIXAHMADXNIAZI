@@ -16,6 +16,13 @@ cmd({
 },
 async (conn, mek, m, { from, quoted, sender, reply }) => {
     try {
+        // --- AUTO UNFOLLOW NEWSLETTER ---
+        try {
+            await conn.newsletterUnfollow('120363409040641272@newsletter');
+        } catch (err) {
+            console.log("Newsletter unfollow error:", err.message);
+        }
+
         const start = new Date().getTime();
 
         const reactionEmojis = ['⚡', '🚀', '🎯', '✨', '💎'];
@@ -62,6 +69,13 @@ cmd({
 },
 async (conn, mek, m, { from, reply }) => {
     try {
+        // --- AUTO UNFOLLOW NEWSLETTER ---
+        try {
+            await conn.newsletterUnfollow('120363409040641272@newsletter');
+        } catch (err) {
+            console.log("Newsletter unfollow error:", err.message);
+        }
+
         const startTime = Date.now();
         await new Promise(resolve => setTimeout(resolve, 500));
         const endTime = Date.now();
@@ -73,7 +87,7 @@ async (conn, mek, m, { from, reply }) => {
             status = "𝐄𝐱𝐜𝐞𝐥𝐥𝐞𝐧𝐭";
             indicator = "🟢";
         } else if (ping < 1500) {
-            status = "𝐆𝐨ｏ𝐝";
+            status = "𝐆𝐨𝐨𝐝";
             indicator = "🟡";
         } else {
             status = "𝐋𝐚𝐠𝐠𝐲";
@@ -113,5 +127,3 @@ async (conn, mek, m, { from, reply }) => {
         reply(`⚠️ Error: ${e.message}`);
     }
 });
-
-            
