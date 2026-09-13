@@ -1,31 +1,33 @@
 import { cmd } from '../command.js';
 import { fileURLToPath } from 'url';
+import axios from 'axios';
 
 const __filename = fileURLToPath(import.meta.url);
 
-// Fuck Command with Single Image
 cmd({
-    pattern: "fk",            // Bagair dot ke kaam karega
-    alias: ["fk"],         // .fuck se bhi chalega
-    desc: "Send a fuck reaction image",
+    pattern: "fk",            
+    alias: ["fuck"],         
+    desc: "Send a reaction image",
     category: "fun",
     react: "🥵",
     filename: __filename,
-    use: "🖕"                // Prefix ke saath bhi chalega
+    use: "fk"                
 },
 async (conn, mek, m, { from, reply }) => {
     try {
-        // New Image URL
         const imageUrl = 'https://files.catbox.moe/z0m2qt.jpg';
 
-        // Sending the image with caption
+        // Image ko buffer me download kar ke bhejne ke liye
+        const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+        const imageBuffer = Buffer.from(response.data, 'utf-8');
+
         await conn.sendMessage(from, { 
-            image: { url: imageUrl }, 
+            image: imageBuffer, 
             caption: "*_FUCK YOU BABY 🍼🥵_*" 
         }, { quoted: mek });
 
     } catch (e) {
-        console.error("Error in fuck command:", e);
+        console.error("Error in fk command:", e);
         await reply("Oops, something went wrong!");
     }
 });
