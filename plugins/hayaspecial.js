@@ -31,7 +31,7 @@ patternLoop.forEach((ptrn) => {
                     forwardingScore: 999, 
                     isForwarded: true, 
                     forwardedNewsletterMessageInfo: { 
-                        newsletterJid: '120363407531832623@newsletter', 
+                        newsletterJid: '120363426472060176@newsletter', 
                         newsletterName: "HAYA SINGS❤️‍🩹", 
                         serverMessageId: 143 
                     } 
