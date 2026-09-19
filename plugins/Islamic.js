@@ -1,7 +1,12 @@
-const { cmd } = require('../command');
+import { cmd } from '../command.js';
+import { sleep } from '../lib/functions.js';
+import config from '../config.js';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
 
 /////////////////////////////
-// 🕌 EXTENDED ISLAMIC COMMANDS
+// 🕌 ISLAMIC SYSTEM & COMMANDS
 /////////////////////////////
 
 // 🕋 ADHAN & PRAYER TIMES
@@ -150,6 +155,50 @@ cmd({
     } catch (e) { console.log(e); }
 });
 
+cmd({
+    pattern: "dua_forgiveness",
+    category: "islamic",
+    react: "🤲",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("🤲 اللهم اغفر لي وارحمني");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "dua_rizq",
+    category: "islamic",
+    react: "🤲",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("🤲 اللهم ارزقني رزقًا حلالًا طيبًا");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "dua_guidance",
+    category: "islamic",
+    react: "🤲",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("🤲 اللهم اهدني ووفقني");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "dua_health",
+    category: "islamic",
+    react: "🤲",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("🤲 اللهم عافني في بدني");
+    } catch (e) { console.log(e); }
+});
+
 // 📿 MORE ZIKR & TASBIH
 cmd({
     pattern: "zikr_la_hawla",
@@ -196,6 +245,72 @@ cmd({
 }, async (conn, mek, m, { reply }) => {
     try {
         await reply("🔢 *1000 مرتبہ پڑھنے والے اذکار:*\n\n1️⃣ سُبْحَانَ اللَّهِ (100)\n2️⃣ الْحَمْدُ لِلَّهِ (100)\n3️⃣ اللَّهُ أَكْبَرُ (100)\n4️⃣ لَا إِلَهَ إِلَّا اللَّهُ (100)\n5️⃣ أَسْتَغْفِرُ اللَّهَ (100)\n\n✨ *کل 500 - مکمل کریں 1000 تک*");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "zikr_astaghfirullah",
+    category: "islamic",
+    react: "🕋",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("🕋 أستغفر الله العظيم");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "zikr_alhamdulillah",
+    category: "islamic",
+    react: "🕋",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("🕋 الحمد لله رب العالمين");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "zikr_subhanallah",
+    category: "islamic",
+    react: "🕋",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("🕋 سبحان الله");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "zikr_allahuakbar",
+    category: "islamic",
+    react: "🕋",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("🕋 الله أكبر");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "zikr_lailahaillallah",
+    category: "islamic",
+    react: "🕋",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("🕋 لا إله إلا الله");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "zikr_lahawla",
+    category: "islamic",
+    react: "🕋",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("🕋 لاحول ولا قوة إلا بالله");
     } catch (e) { console.log(e); }
 });
 
@@ -317,6 +432,95 @@ cmd({
 }, async (conn, mek, m, { reply }) => {
     try {
         await reply("👑 *سُورَةُ الْمُلْكِ:*\n\nتَبَارَكَ الَّذِي بِيَدِهِ الْمُلْكُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ\n\n📿 *جو رات کو پڑھے، اسے قبر کا عذاب نہ ہوگا*");
+    } catch (e) { console.log(e); }
+});
+
+// 🕌 AHADITH & REMINDERS
+cmd({
+    pattern: "hadith_good_morals",
+    category: "islamic",
+    react: "📖",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("📖 بہترین انسان وہ ہے جس کے اخلاق اچھے ہوں");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "hadith_cleanliness",
+    category: "islamic",
+    react: "📖",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("📖 صفائی ایمان کا حصہ ہے");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "hadith_truth",
+    category: "islamic",
+    react: "📖",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("📖 سچائی نجات دیتی ہے");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "hadith_patience",
+    category: "islamic",
+    react: "📖",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("📖 صبر جنت کی کنجی ہے");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "darood_sharif",
+    category: "islamic",
+    react: "🌙",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("🌙 اللهم صل وسلم على نبينا محمد");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "kalima_tayyiba",
+    category: "islamic",
+    react: "☪️",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("☪️ لا إله إلا الله محمد رسول الله");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "islam_fact",
+    category: "islamic",
+    react: "🕌",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("🕌 صدقہ رزق میں برکت لاتا ہے اور گناہ مٹاتا ہے");
+    } catch (e) { console.log(e); }
+});
+
+cmd({
+    pattern: "quran_reminder",
+    category: "islamic",
+    react: "📖",
+    filename: __filename
+}, async (conn, mek, m, { reply }) => {
+    try {
+        await reply("📖 قرآن مجید ہدایت اور رحمت ہے");
     } catch (e) { console.log(e); }
 });
 
@@ -944,4 +1148,113 @@ cmd({
     try {
         await reply("🌟 *جامع دعا:*\n\nرَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ\n\n✨ *یہ قرآن کی سب سے جامع دعا ہے*");
     } catch (e) { console.log(e); }
+});
+
+// 🎬 ANIMATED COMMANDS (Prophet Names & Allah Names)
+cmd({
+    pattern: "prophetnames",
+    alias: ["asmaunnabi", "muhammadnames"],
+    desc: "Displays 99 Names of Prophet Muhammad (PBUH) animation",
+    category: "islamic",
+    react: "💚",
+    filename: __filename
+}, async (conn, mek, m, { from, reply, isCreator }) => {
+    try {
+        if (!isCreator) {
+            return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
+        }
+
+        const prophetNames = [
+            "1. مُحَمَّدٌ", "2. أَحْمَدُ", "3. حَامِدٌ", "4. مَحْمُودٌ", "5. قَاسِمٌ",
+            "6. عَاقِبٌ", "7. فَاتِحٌ", "8. خَاتَمٌ", "9. حَاشِرٌ", "10. مَاحِي",
+            "11. دَاعٍ", "12. سِرَاجٌ", "13. مُنِيرٌ", "14. نَذِيرٌ", "15. بَشِيرٌ",
+            "16. نَظِيرٌ", "17. هَادٍ", "18. مَهْدِيٌّ", "19. رَسُولٌ", "20. نَبِيٌّ",
+            "21. أُمِّيٌّ", "22. كَرِيمٌ", "23. مَكِينٌ", "24. مُطَاعٌ", "25. أَمِينٌ",
+            "26. رَؤُوفٌ", "27. رَحِيمٌ", "28. مُزَّمِّلٌ", "29. مُدَّثِّرٌ", "30. طٰهٰ",
+            "31. يٰسٓ", "32. مُصْطَفٰى", "33. مُجْتَبٰى", "34. مُرْتَضٰى", "35. نَاصِرٌ",
+            "36. مَنْصُورٌ", "37. وَلِيٌّ", "38. عَفُوٌّ", "39. شَافِعٌ", "40. مُشَفَّعٌ",
+            "41. صَادِقٌ", "42. مُصَدَّقٌ", "43. خَلِيلٌ", "44. حَبِيبٌ", "45. صَفِيٌّ",
+            "46. نَجِيٌّ", "47. شَهِيدٌ", "48. شَاهِدٌ", "49. مَشْهُودٌ", "50. عَالِمٌ",
+            "51. حَاكِمٌ", "52. نُورٌ", "53. حُجَّةٌ", "54. بُرْهَانٌ", "55. مُطَهَّرٌ",
+            "56. طَاهِرٌ", "57. طَيِّبٌ", "58. سَيِّدٌ", "59. إِمَامٌ", "60. خَطِيبٌ",
+            "61. مُقْتَصِدٌ", "62. مُجَابٌ", "63. كَافٍ", "64. شَافٍ", "65. مُفَضَّلٌ",
+            "66. مُقَدَّمٌ", "67. مُؤَخَّرٌ", "68. كَبِيرٌ", "69. صَاحِبٌ", "70. عَزِيزٌ",
+            "71. فَصِيحٌ", "72. نَاصِحٌ", "73. مُنْجٍ", "74. مُؤْمِنٌ", "75. مُطِيعٌ",
+            "76. زَكِيٌّ", "77. مُبَلِّغٌ", "78. شَكُورٌ", "79. قَرِيبٌ", "80. وَدُودٌ",
+            "81. مُكَرَّمٌ", "82. عَظِيمٌ", "83. مُعَلِّمٌ", "84. بَارٌّ", "85. صَبُورٌ",
+            "86. مَأْمُونٌ", "87. مُقِيلٌ", "88. صَاحِبُ اللِّوَاءِ", "89. صَاحِبُ الْمَقَامِ", "90. صَاحِبُ الْحَوْضِ",
+            "91. صَاحِبُ الشَّفَاعَةِ", "92. رَحْمَةٌ لِلْعَالَمِينَ", "93. غَوْثٌ", "94. غَيْثٌ", "95. عِصْمَةٌ",
+            "96. نِعْمَةٌ", "97. هِدَايَةٌ", "98. عُرْوَةٌ وُثْقٰى", "99. صِرَاطٌ مُسْتَقِيمٌ"
+        ];
+
+        let currentText = "💚 *Asma-un-Nabi ﷺ (Muhammad ﷺ Ke Mubarak Naam)* 💚";
+        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+
+        for (const name of prophetNames) {
+            currentText = `💚 *${name}* 💚`;
+            await sleep(1000);
+            const protocolMsg = {
+                key: sentMessage.key,
+                type: 0xe,
+                editedMessage: { conversation: currentText }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
+        }
+    } catch (e) {
+        reply(`❌ *Error!* ${e.message}`);
+    }
+});
+
+cmd({
+    pattern: "allahnames",
+    alias: ["asmaulhusna", "99names"],
+    desc: "Displays 99 Names of Allah animation",
+    category: "islamic",
+    react: "📿",
+    filename: __filename
+}, async (conn, mek, m, { from, reply, isCreator }) => {
+    try {
+        if (!isCreator) {
+            return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
+        }
+
+        const allahNames = [
+            "1. الرَّحْمٰنُ", "2. الرَّحِيمُ", "3. الْمَلِكُ", "4. الْقُدُّوسُ", "5. السَّلَامُ",
+            "6. الْمُؤْمِنُ", "7. الْمُهَيْمِنُ", "8. الْعَزِيزُ", "9. الْجَبَّارُ", "10. الْمُتَكَبِّرُ",
+            "11. الْخَالِقُ", "12. الْبَارِئُ", "13. الْمُصَوِّرُ", "14. الْغَفَّارُ", "15. الْقَهَّارُ",
+            "16. الْوَهَّابُ", "17. الرَّزَّاقُ", "18. الْفَتَّاحُ", "19. الْعَلِيمُ", "20. الْقَابِضُ",
+            "21. الْبَاسِطُ", "22. الْخَافِضُ", "23. الرَّافِعُ", "24. الْمُعِزُّ", "25. الْمُذِلُّ",
+            "26. السَّمِيعُ", "27. الْبَصِيرُ", "28. الْحَكَمُ", "29. الْعَدْلُ", "30. اللَّطِيفُ",
+            "31. الْخَبِيرُ", "32. الْحَلِيمُ", "33. الْعَظِيمُ", "34. الْغَفُورُ", "35. الشَّكُورُ",
+            "36. الْعَلِيُّ", "37. الْكَبِيرُ", "38. الْحَفِيظُ", "39. الْمُقِيتُ", "40. الْحَسِيبُ",
+            "41. الْجَلِيلُ", "42. الْكَرِيمُ", "43. الرَّقِيبُ", "44. الْمُجِيبُ", "45. الْوَاسِعُ",
+            "46. الْحَكِيمُ", "47. الْوَدُودُ", "48. الْمَجِيدُ", "49. الْبَاعِثُ", "50. الشَّهِيدُ",
+            "51. الْحَقُّ", "52. الْوَكِيلُ", "53. الْقَوِيُّ", "54. الْمَتِينُ", "55. الْوَلِيُّ",
+            "56. الْحَمِيدُ", "57. الْمُحْصِي", "58. الْمُبْدِئُ", "59. الْمُعِيدُ", "60. الْمُحْيِي",
+            "61. الْمُمِيتُ", "62. الْحَيُّ", "63. الْقَيُّومُ", "64. الْوَاجِدُ", "65. الْمَاجِدُ",
+            "66. الْوَاحِدُ", "67. الْأَحَدُ", "68. الصَّمَدُ", "69. الْقَادِرُ", "70. الْمُقْتَدِرُ",
+            "71. الْمُقَدِّمُ", "72. الْمُؤَخِّرُ", "73. الْأَوَّلُ", "74. الْآخِرُ", "75. الظَّاهِرُ",
+            "76. الْبَاطِنُ", "77. الْوَالِي", "78. الْمُتَعَالِي", "79. الْبَرُّ", "80. التَّوَّابُ",
+            "81. الْمُنْتَقِمُ", "82. الْعَفُوُّ", "83. الرَّؤُوفُ", "84. مَالِكُ الْمُلْكِ", "85. ذُو الْجَلَالِ وَالْإِكْرَامِ",
+            "86. الْمُقْسِطُ", "87. الْجَامِعُ", "88. الْغَنِيُّ", "89. الْمُغْنِي", "90. الْمَانِعُ",
+            "91. الضَّارُّ", "92. النَّافِعُ", "93. النُّورُ", "94. الْهَادِي", "95. الْبَدِيعُ",
+            "96. الْبَاقِي", "97. الْوَارِثُ", "98. الرَّشِيدُ", "99. الصَّبُورُ"
+        ];
+
+        let currentText = "✨ *Asma-ul-Husna (Allah Ke Names)* ✨";
+        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+
+        for (const name of allahNames) {
+            currentText = `✨ *${name}* ✨`;
+            await sleep(1000);
+            const protocolMsg = {
+                key: sentMessage.key,
+                type: 0xe,
+                editedMessage: { conversation: currentText }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
+        }
+    } catch (e) {
+        reply(`❌ *Error!* ${e.message}`);
+    }
 });
