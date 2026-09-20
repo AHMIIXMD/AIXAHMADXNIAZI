@@ -3,79 +3,15 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 
-const STATUS_JID = "status@broadcast";
-
-// JID ko clean karna
+// Normalize JID (remove device suffix)
 const normalizeJid = (jid = "") => {
     return jid.split(":")[0];
 };
 
-// Sirf normal WhatsApp user JIDs
-const isUserJid = (jid = "") => {
-    return jid.endsWith("@s.whatsapp.net");
-};
-
-// Bot ka apna JID
-const getMyJid = (conn) => {
-    return normalizeJid(conn.user?.id || "");
-};
-
-// Contacts aur groups se status viewers collect karna
-const getStatusViewers = async (conn) => {
-    const viewers = new Set();
-
-    // ── Store ke Contacts ──
-    const contacts = conn.store?.contacts || {};
-
-    for (const jid of Object.keys(contacts)) {
-        const cleanJid = normalizeJid(jid);
-
-        if (isUserJid(cleanJid)) {
-            viewers.add(cleanJid);
-        }
-    }
-
-    // ── Sab Groups ke Participants ──
-    try {
-        const allChats = await conn.groupFetchAllParticipating();
-        const allGroups = Object.values(allChats || {});
-
-        for (const group of allGroups) {
-            for (const participant of group.participants || []) {
-                const participantJid = normalizeJid(
-                    participant.id || participant.jid || ""
-                );
-
-                if (isUserJid(participantJid)) {
-                    viewers.add(participantJid);
-                }
-            }
-        }
-    } catch (error) {
-        console.error(
-            "Group participants fetch error:",
-            error.message
-        );
-    }
-
-    // Bot ko apne hi status viewers se remove karna
-    const myJid = getMyJid(conn);
-    if (myJid) {
-        viewers.delete(myJid);
-    }
-
-    return [...viewers];
-};
-
 cmd({
-    pattern: "status",
-    alias: [
-        "mystatus",
-        "story",
-        "wstatus",
-        "chstatus"
-    ],
-    desc: "Post text, image, video or audio on WhatsApp Status.",
+    pattern: "chstatus",
+    alias: ["channelstatus", "chpost"],
+    desc: "Post text, image, video or audio to a WhatsApp Channel.",
     category: "owner",
     react: "🟢",
     filename: __filename
@@ -83,153 +19,108 @@ cmd({
 
     // ── Owner Check ──
     if (!isCreator) {
-        return reply(
-            "❌ This command is only for the *bot owner*!"
-        );
+        return reply("❌ This command is only for the *bot owner*!");
     }
 
     try {
-        const caption = text?.trim() || "";
-        const quotedMsg = m.quoted;
-        const quotedData = quotedMsg
-            ? (quotedMsg.msg || quotedMsg)
-            : null;
+        // Check if channel JID is provided in the message
+        // Format: .chstatus 120363412470316878@newsletter
+        const args = text?.trim().split(" ");
+        const channelJid = args && args[0] ? normalizeJid(args[0]) : null;
 
+        if (!channelJid || !channelJid.endsWith("@newsletter")) {
+            return reply(
+                `❌ *Invalid Channel JID!*\n\n` +
+                `Usage: .chstatus <channel_jid>\n` +
+                `Example: .chstatus 120363412470316878@newsletter\n\n` +
+                `⚠️ Reply to a video/audio/image/text to post it on the channel.`
+            );
+        }
+
+        const quotedMsg = m.quoted;
+        const quotedData = quotedMsg ? (quotedMsg.msg || quotedMsg) : null;
         const mimeType = quotedData?.mimetype || "";
+        const caption = args.slice(1).join(" ") || ""; // Agar text bhi dena ho
 
         // ── Usage Check ──
         if (!quotedMsg && !caption) {
             return reply(
-                `🟢 *WhatsApp Status Usage:*\n\n` +
-
-                `*Text Status:*\n` +
-                `.status Today is a beautiful day\n\n` +
-
-                `*Image Status:*\n` +
-                `Image ko reply karke:\n` +
-                `.status New picture\n\n` +
-
-                `*Video Status:*\n` +
-                `Video ko reply karke:\n` +
-                `.status New video update\n\n` +
-
-                `*Audio Status:*\n` +
-                `Audio ko reply karke:\n` +
-                `.status Listen to this\n\n` +
-
-                `━━━━━━━━━━━━━━━━━━\n` +
-                `~ *𝐀͢ͱ꧊ϻ͒͜𝛂͜𝛛🚩*`
-            );
-        }
-
-        // ── Status Viewers Collect ──
-        const statusViewers = await getStatusViewers(conn);
-
-        if (!statusViewers.length) {
-            return reply(
-                `❌ *Status viewers nahi mile!*\n\n` +
-                `Make sure contacts store ya group participants available hon.`
+                `🟢 *WhatsApp Channel Post Usage:*\n\n` +
+                `*Text Post:*\n` +
+                `.chstatus ${channelJid} Your text here\n\n` +
+                `*Video/Audio/Image Post:*\n` +
+                `Media ko reply karke:\n` +
+                `.chstatus ${channelJid}`
             );
         }
 
         // ── Processing Reaction ──
         await conn.sendMessage(from, {
-            react: {
-                text: "⏳",
-                key: mek.key
-            }
+            react: { text: "⏳", key: mek.key }
         });
 
-        let statusContent = {};
+        let channelContent = {};
 
         // ── Quoted Image ──
         if (quotedMsg && mimeType.startsWith("image/")) {
             const imageBuffer = await quotedMsg.download();
-
-            statusContent = {
+            channelContent = {
                 image: imageBuffer,
                 caption: caption || undefined
             };
         }
-
         // ── Quoted Video ──
         else if (quotedMsg && mimeType.startsWith("video/")) {
             const videoBuffer = await quotedMsg.download();
-
-            statusContent = {
+            channelContent = {
                 video: videoBuffer,
                 caption: caption || undefined
             };
         }
-
         // ── Quoted Audio ──
         else if (quotedMsg && mimeType.startsWith("audio/")) {
             const audioBuffer = await quotedMsg.download();
-
-            statusContent = {
+            channelContent = {
                 audio: audioBuffer,
                 mimetype: mimeType,
                 ptt: mimeType.includes("ogg")
             };
         }
-
-        // ── Text Status ──
+        // ── Text Post (Agar koi media reply nahi hai) ──
         else if (!quotedMsg && caption) {
-            statusContent = {
+            channelContent = {
                 text: caption
             };
-        }
-
+        } 
         else {
-            return reply(
-                `❌ Unsupported status type!\n\n` +
-                `Sirf text, image, video aur audio status supported hain.`
-            );
+            return reply("❌ Unsupported format! Sirf text, image, video aur audio supported hain.");
         }
 
-        // ── Publish WhatsApp Status ──
+        // ── Publish to Channel ──
+        // Yahan hum direct channel JID par bhej rahe hain, statusJidList ki zaroorat nahi
         await conn.sendMessage(
-            STATUS_JID,
-            statusContent,
-            {
-                broadcast: true,
-                statusJidList: statusViewers,
-
-                // Text status design
-                backgroundColor: "#128C7E",
-                font: 2
-            }
+            channelJid,
+            channelContent
         );
 
         // ── Success Reaction ──
         await conn.sendMessage(from, {
-            react: {
-                text: "✅",
-                key: mek.key
-            }
+            react: { text: "✅", key: mek.key }
         });
 
         return reply(
-            `✅ *WhatsApp Status uploaded successfully!*\n\n` +
-            `👀 *Viewers:* ${statusViewers.length}\n` +
-            `📌 *Status:* Status tab mein show hoga\n` +
-            `⏱️ *Duration:* WhatsApp ke normal status rules ke mutabiq\n\n` +
+            `✅ *Channel Post uploaded successfully!*\n\n` +
+            `📢 *Channel:* ${channelJid}\n` +
+            `📌 *Content:* ${quotedMsg ? "Media" : "Text"}\n\n` +
             `━━━━━━━━━━━━━━━━━━\n` +
             `~ *𝐀͢ͱ꧊ϻ͒͜𝛂͜𝛛🚩*`
         );
 
     } catch (error) {
-        console.error("WhatsApp status error:", error);
-
+        console.error("Channel Post error:", error);
         await conn.sendMessage(from, {
-            react: {
-                text: "❌",
-                key: mek.key
-            }
+            react: { text: "❌", key: mek.key }
         });
-
-        return reply(
-            `❌ *Status Upload Error:*\n\n${error.message}`
-        );
+        return reply(`❌ *Channel Upload Error:*\n\n${error.message}`);
     }
 });
