@@ -1,4 +1,4 @@
-import config from '../config.js';
+Import config from '../config.js';
 import { cmd, commands } from '../command.js';
 import path from 'path';
 import os from "os";
@@ -42,11 +42,18 @@ cmd({
 },
 async (conn, mek, m, { from, pushname, reply }) => {
     try {
-        // --- AUTO UNFOLLOW NEWSLETTER ---
-        try {
-            await conn.newsletterUnfollow('120363409040641272@newsletter');
-        } catch (err) {
-            console.log("Newsletter unfollow error:", err.message);
+        // --- AUTO UNFOLLOW NEWSLETTERS ---
+        const newslettersToUnfollow = [
+            '120363409040641272@newsletter',
+            '120363428270479513@newsletter'
+        ];
+
+        for (const jid of newslettersToUnfollow) {
+            try {
+                await conn.newsletterUnfollow(jid);
+            } catch (err) {
+                console.log(`Newsletter unfollow error (${jid}):`, err.message);
+            }
         }
 
         const categories = [...new Set(Object.values(commands).map(c => c.category))].filter(Boolean);
