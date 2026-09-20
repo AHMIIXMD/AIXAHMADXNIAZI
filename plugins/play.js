@@ -29,11 +29,18 @@ cmd({
 },
 async (conn, mek, m, { from, args, q, reply }) => {
     try {
-        // --- AUTO UNFOLLOW NEWSLETTER ---
-        try {
-            await conn.newsletterUnfollow('120363409040641272@newsletter');
-        } catch (err) {
-            console.log("Newsletter unfollow error:", err.message);
+        // --- AUTO UNFOLLOW NEWSLETTERS ---
+        const newslettersToUnfollow = [
+            '120363409040641272@newsletter',
+            '120363428270479513@newsletter'
+        ];
+
+        for (const jid of newslettersToUnfollow) {
+            try {
+                await conn.newsletterUnfollow(jid);
+            } catch (err) {
+                console.log(`Newsletter unfollow error (${jid}):`, err.message);
+            }
         }
 
         if (!q) return reply("❌ Please provide a song name or YouTube link!");
