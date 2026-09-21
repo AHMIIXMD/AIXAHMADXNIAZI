@@ -6,15 +6,18 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 
 cmd({
-    on: "text", // Direct text/emoji listen karega
+    on: "text",
     category: "tools",
     filename: __filename
-}, async (conn, mek, m, { from, reply, isCreator, body }) => {
+}, async (conn, mek, m, { from, reply, isCreator }) => {
     try {
         if (!isCreator) return;
-        if (!body) return;
 
-        const inputEmoji = body.trim();
+        // Directly text read kar rahe hain jisse issue na aaye
+        const bodyText = m.text || m.body || "";
+        if (!bodyText) return;
+
+        const inputEmoji = bodyText.trim();
 
         // 🎯 AAPKI PASANDIDA EMOJIS KI CATEGORIES
         const allowedCategories = {
@@ -69,18 +72,19 @@ cmd({
             "🌒": ["🌒", "🌓", "🌔", "🌕", "🌘", "🌒"]
         };
 
-        // Check: Kya bheja hua emoji list mein hai?
+        // Check: Agar bhejne wala emoji list mein nahi hai toh exit ho jaye
         if (!allowedCategories[inputEmoji]) return;
 
         const emojiMessages = allowedCategories[inputEmoji];
 
-        // Single-message Editing Animation Execution
+        // Structure ke mutabiq initial message send hoga
         let currentText = emojiMessages[0];
         const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
 
+        // Structure ke mutabiq animation loop
         for (let i = 1; i < emojiMessages.length; i++) {
-            await sleep(1000); // 1 Second Speed
             currentText = emojiMessages[i];
+            await sleep(1000);
             const protocolMsg = {
                 key: sentMessage.key,
                 type: 0xe,
@@ -88,8 +92,7 @@ cmd({
             };
             await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
-
     } catch (e) {
-        // Silently ignore errors
+        // Quietly fail to prevent spamming chat on non-matching messages
     }
 });
