@@ -6,14 +6,10 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 
-cmd({
-    pattern: "pinterest",
-    alias: ["pin", "pindl"],
-    desc: "Download Pinterest videos/images",
-    category: "download",
-    react: "📌",
-    filename: __filename
-}, async (conn, mek, m, { from, q, reply }) => {
+// ==========================================
+// 🔧 Common function — Pinterest download karne ke liye
+// ==========================================
+async function downloadPinterest(conn, mek, m, { from, q, reply }) {
     try {
         if (!q) return await reply("📌 *Please provide a Pinterest URL*");
 
@@ -23,7 +19,7 @@ cmd({
         }
 
         // Send processing react
-        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+        await conn.sendMessage(from, { react: { text: '⏳', key: mek.key } });
 
         // 🎬 Fetch from Pinterest API
         const apiUrl = `https://jawad-tech.vercel.app/download/pinterest?url=${encodeURIComponent(q)}`;
@@ -70,11 +66,73 @@ cmd({
         }
 
         // ✅ React success
-        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+        await conn.sendMessage(from, { react: { text: '✅', key: mek.key } });
 
     } catch (e) {
         console.error("❌ Error in .pinterest:", e);
         await reply("⚠️ *Something went wrong!*\n\nPlease try again with a different Pinterest URL.");
-        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+        await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
+    }
+}
+
+// ==========================================
+// 📌 1. Prefix wala handler (.pinterest, .pin, .pindl)
+// ==========================================
+cmd({
+    pattern: "pinterest",
+    alias: ["pin", "pindl"],
+    desc: "Download Pinterest videos/images",
+    category: "download",
+    react: "📌",
+    filename: __filename
+}, async (conn, mek, m, { from, q, reply }) => {
+    await downloadPinterest(conn, mek, m, { from, q, reply });
+});
+
+// ==========================================
+// 📌 2. Bina prefix wala handler (pinterest, pin, pindl)
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // Pinterest triggers (bina prefix)
+        const pinTriggers = ["pinterest", "pin", "pindl"];
+
+        // Check: kya pehla word trigger hai?
+        if (!pinTriggers.includes(firstWord)) return;
+
+        // Baaki text (URL)
+        const query = userText.slice(firstWord.length).trim();
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Pinterest download karo
+        await downloadPinterest(conn, mek, { }, {
+            from,
+            q: query,
+            reply: replyFn
+        });
+
+    } catch (error) {
+        console.error("Pinterest No-Prefix Error:", error);
     }
 });
