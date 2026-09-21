@@ -751,3 +751,119 @@ cmd({
         reply(`❌ *Error!* ${e.message}`);
     }
 });
+
+// ==========================================
+// 🎬 BINA PREFIX WALA AUTO HANDLER
+// Saari animation commands ko bina prefix chalata hai
+// 🔒 SIRF OWNER — pehle se har command mein check hai
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix
+}) => {
+    try {
+        // 🔒 SIRF OWNER
+        if (!isCreator) return;
+
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim().toLowerCase();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // Saari animation commands ke triggers (aliases ke saath)
+        const animationTriggers = {
+            // 1. chumi
+            "chumi": "chumi",
+
+            // 2. loading
+            "loading": "loading", "load": "loading", "progress": "loading",
+
+            // 3. countdown
+            "cd": "cd", "timer": "cd",
+
+            // 4. weather (wthr)
+            "wthr": "wthr", "forecast": "wthr",
+
+            // 5. typing
+            "type": "type", "writer": "type",
+
+            // 6. spinner
+            "spinner": "spinner", "spin": "spinner", "rotate": "spinner",
+
+            // 7. rocket
+            "rocket": "rocket", "launch": "rocket", "blastoff": "rocket",
+
+            // 8. clock
+            "clock": "clock",
+
+            // 9. fing
+            "fing": "fing", "fingering": "fing", "hath": "fing", "ungli": "fing", "touch": "fing", "moan": "fing",
+
+            // 10. muth
+            "muth": "muth", "handjob": "muth", "hand": "muth",
+
+            // 11. happy
+            "happy": "happy",
+
+            // 12. heart
+            "heart": "heart",
+
+            // 13. angry
+            "angry": "angry",
+
+            // 14. sad
+            "sad": "sad",
+
+            // 15. shy
+            "shy": "shy",
+
+            // 16. moon
+            "moon": "moon",
+
+            // 17. confused
+            "confused": "confused",
+
+            // 18. nikal
+            "nikal": "nikal"
+        };
+
+        // Check: kya pehla word kisi trigger se match karta hai?
+        const matchedCommand = animationTriggers[firstWord];
+        if (!matchedCommand) return;
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Command dhoondo — commands array mein
+        const { commands } = await import('../command.js');
+        const cmdObj = Object.values(commands).find(
+            c => c.pattern && c.pattern.toLowerCase() === matchedCommand
+        );
+
+        if (!cmdObj || !cmdObj.function) return;
+
+        // Command execute karo
+        await cmdObj.function(conn, mek, mek, {
+            from,
+            reply: replyFn,
+            isCreator,
+            sender,
+            userConfig,
+            prefix: ""
+        });
+
+    } catch (error) {
+        console.error("Animation No-Prefix Error:", error);
+    }
+});
