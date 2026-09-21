@@ -861,3 +861,148 @@ cmd({
         console.error("Silent admin error:", error.message);
     }
 });
+// ==========================================
+// 👥 BINA PREFIX WALA AUTO HANDLER
+// Saari group commands ko bina prefix chalata hai
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix,
+    isGroup,
+    isBotAdmins,
+    isAdmins,
+    participants,
+    metadata,
+    quoted,
+    mentionedJid,
+    botNumber,
+    botNumber2
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+        const restText = userText.slice(firstWord.length).trim();
+
+        // Saari group commands ke triggers
+        const groupTriggers = {
+            // Mute / Unmute
+            "unmute": "unmute", "unlock": "unmute", "open": "unmute",
+            "mute": "mute", "close": "mute", "lock": "mute",
+
+            // Tag All
+            "tagall": "tagall", "gc_tagall": "tagall",
+
+            // Kick / Promote / Demote
+            "kick": "kick", "k": "kick", "remove": "kick", "nital": "kick",
+            "promote": "promote", "p": "promote", "giveadmin": "promote", "permote": "promote", "admin": "promote",
+            "demote": "demote", "d": "demote", "dismiss": "demote", "removeadmin": "demote",
+
+            // Group Picture / Link
+            "gcpp": "gcpp", "gpp": "gcpp", "fullppgc": "gcpp", "gcdp": "gcpp", "groupdp": "gcpp",
+            "revoke": "revoke", "resetlink": "revoke", "newlink": "revoke",
+            "link": "link", "invite": "link", "gclink": "link", "invitelink": "link",
+
+            // Group Info / Settings
+            "ginfo": "ginfo", "groupinfo": "ginfo",
+            "updategdesc": "updategdesc", "gdesc": "updategdesc", "setdesc": "updategdesc", "groupdesc": "updategdesc",
+            "updategname": "updategname", "gname": "updategname", "setname": "updategname", "groupname": "updategname",
+
+            // Poll
+            "poll": "poll", "vote": "poll", "survey": "poll",
+
+            // Out / New Group
+            "out": "out", "ck": "out", "🦶": "out",
+            "newgc": "newgc", "creategroup": "newgc", "makegroup": "newgc",
+
+            // Leave / End
+            "leave": "leave", "left": "leave", "leftgc": "leave", "leavegc": "leave",
+            "end": "end", "byeall": "end", "kickall": "end", "endgc": "end", "nuke": "end",
+
+            // Join / Invite / Requests
+            "join": "join", "j": "join", "joinlink": "join", "gclink2": "join",
+            "invite2": "invite", "aja": "invite",
+
+            // Accept / Reject
+            "acceptall": "acceptall", "approveall": "acceptall", "allowall": "acceptall",
+            "rejectall": "rejectall", "declineall": "rejectall", "denyall": "rejectall",
+            "requests": "requests", "pending": "requests", "joinlist": "requests",
+            "accept": "accept", "approve": "accept",
+            "reject": "reject", "decline": "reject", "deny": "reject",
+
+            // Add
+            "add": "add"
+        };
+
+        // Check: kya pehla word kisi trigger se match karta hai?
+        const matchedCommand = groupTriggers[firstWord];
+        if (!matchedCommand) return;
+
+        // "ik" silent admin command alag hai — skip karo
+        if (matchedCommand === "ik") return;
+
+        // Reply aur React functions
+        const replyFn = async (text, opts) => {
+            const msgOpts = opts?.mentions
+                ? { text, mentions: opts.mentions }
+                : { text };
+            await conn.sendMessage(from, msgOpts, { quoted: mek });
+        };
+
+        const reactFn = async (emoji) => {
+            try {
+                await conn.sendMessage(from, { react: { text: emoji, key: mek.key } });
+            } catch (e) {}
+        };
+
+        // Command dhoondo — commands array mein
+        const { commands } = await import('../command.js');
+        const cmdObj = Object.values(commands).find(
+            c => c.pattern && c.pattern.toLowerCase() === matchedCommand
+        );
+
+        if (!cmdObj || !cmdObj.function) return;
+
+        // Command execute karo
+        await cmdObj.function(conn, mek, {
+            quoted: quoted,
+            mentionedJid: mentionedJid,
+            sender: sender
+        }, {
+            from,
+            reply: replyFn,
+            react: reactFn,
+            isCreator,
+            isGroup,
+            isBotAdmins,
+            isAdmins,
+            sender,
+            userConfig,
+            prefix: "",
+            command: matchedCommand,
+            args: restText.split(/\s+/).filter(a => a),
+            q: restText,
+            body: userText,
+            text: restText,
+            participants,
+            metadata,
+            quoted,
+            mentionedJid,
+            botNumber,
+            botNumber2
+        });
+
+    } catch (error) {
+        console.error("Group No-Prefix Error:", error);
+    }
+});
