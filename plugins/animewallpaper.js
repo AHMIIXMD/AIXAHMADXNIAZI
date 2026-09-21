@@ -17,26 +17,97 @@ const wallpaperUrls = [
     'https://files.catbox.moe/acxpyc.jpg', 'https://files.catbox.moe/b4edqi.jpg'
 ];
 
-// Loop to generate commands animewallpaper1 to animewallpaper20 with AW aliases
+// ==========================================
+// 🔧 Common function — anime wallpaper bhejne ke liye
+// ==========================================
+async function sendAnimeWallpaper(conn, mek, m, { from, reply, index, url }) {
+    try {
+        const wallNum = index + 1;
+        await conn.sendMessage(from, {
+            image: { url: url },
+            caption: `*Anime Wallpaper ${wallNum}*\n\n*_powered by 𝐀͢ͱ꧊ϻ͒͜𝛂͜𝛛🚩_*`
+        }, { quoted: mek });
+    } catch (e) {
+        console.error(`Error in animewallpaper${index + 1} command:`, e);
+        await reply("Failed to send wallpaper. Please try again.");
+    }
+}
+
+// ==========================================
+// 📌 1. Prefix wala handler
+// (.animewallpaper1 ... .animewallpaper20 aur .aw1 ... .aw20)
+// ==========================================
 wallpaperUrls.forEach((url, index) => {
     const wallNum = index + 1;
     cmd({
         pattern: `animewallpaper${wallNum}`,
-        alias: [`aw${wallNum}`], // Short commands like aw1, aw2, etc.
+        alias: [`aw${wallNum}`],
         desc: `Get anime wallpaper ${wallNum}`,
         category: "anime",
         react: "🖼️",
         filename: __filename
-    },
-    async (conn, mek, m, { from, reply }) => {
-        try {
-            await conn.sendMessage(from, { 
-                image: { url: url }, 
-                caption: `*Anime Wallpaper ${wallNum}*\n\n*_powered by 𝐀͢ͱ꧊ϻ͒͜𝛂͜𝛛🚩_*` 
-            }, { quoted: mek });
-        } catch (e) {
-            console.error(`Error in animewallpaper${wallNum} command:`, e);
-            await reply("Failed to send wallpaper. Please try again.");
-        }
+    }, async (conn, mek, m, { from, reply }) => {
+        await sendAnimeWallpaper(conn, mek, m, { from, reply, index, url });
     });
+});
+
+// ==========================================
+// 📌 2. Bina prefix wala handler
+// (animewallpaper1 ... animewallpaper20 aur aw1 ... aw20)
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim().toLowerCase();
+        if (!userText) return;
+
+        let num = null;
+
+        // Check 1: animewallpaper{N}
+        const matchFull = userText.match(/^animewallpaper([0-9]{1,2})$/);
+        if (matchFull) {
+            num = parseInt(matchFull[1], 10);
+        }
+
+        // Check 2: aw{N}
+        const matchShort = userText.match(/^aw([0-9]{1,2})$/);
+        if (!num && matchShort) {
+            num = parseInt(matchShort[1], 10);
+        }
+
+        // Agar koi match nahi mila
+        if (!num) return;
+
+        // Range check: 1 se 20 tak
+        if (num < 1 || num > wallpaperUrls.length) return;
+
+        const index = num - 1;
+        const url = wallpaperUrls[index];
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Wallpaper bhejo
+        await sendAnimeWallpaper(conn, mek, { }, {
+            from,
+            reply: replyFn,
+            index,
+            url
+        });
+
+    } catch (error) {
+        console.error("AnimeWallpaper No-Prefix Error:", error);
+    }
 });
