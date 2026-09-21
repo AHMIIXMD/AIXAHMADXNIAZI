@@ -5,15 +5,10 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 
-cmd({
-    pattern: "character",
-    alias: ["char"],
-    desc: "Check the character of a mentioned user.",
-    react: "🔥",
-    category: "fun",
-    filename: __filename,
-}, 
-async (conn, mek, m, { from, isGroup, text, reply }) => {
+// ==========================================
+// 🔧 Common function — character check karne ke liye
+// ==========================================
+async function checkCharacter(conn, mek, m, { from, isGroup, text, reply }) {
     try {
         // Ensure the command is used in a group
         if (!isGroup) {
@@ -21,7 +16,9 @@ async (conn, mek, m, { from, isGroup, text, reply }) => {
         }
 
         // Extract the mentioned user
-        const mentionedUser = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+        const mentionedUser = m.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
+            || m.mentionedJid?.[0];
+
         if (!mentionedUser) {
             return reply("Please mention a user whose character you want to check.");
         }
@@ -58,10 +55,71 @@ async (conn, mek, m, { from, isGroup, text, reply }) => {
         await conn.sendMessage(from, {
             text: message,
             mentions: [mentionedUser],
-        }, { quoted: m });
+        }, { quoted: mek });
 
     } catch (e) {
         console.error("Error in character command:", e);
         reply("An error occurred while processing the command. Please try again.");
+    }
+}
+
+// ==========================================
+// 📌 1. Prefix wala handler (.character, .char)
+// ==========================================
+cmd({
+    pattern: "character",
+    alias: ["char"],
+    desc: "Check the character of a mentioned user.",
+    react: "🔥",
+    category: "fun",
+    filename: __filename,
+}, async (conn, mek, m, { from, isGroup, text, reply }) => {
+    await checkCharacter(conn, mek, m, { from, isGroup, text, reply });
+});
+
+// ==========================================
+// 📌 2. Bina prefix wala handler (character, char)
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix,
+    isGroup
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim().toLowerCase();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // Character triggers (bina prefix)
+        const charTriggers = ["character", "char"];
+
+        // Check: kya pehla word trigger hai?
+        if (!charTriggers.includes(firstWord)) return;
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Character check karo
+        await checkCharacter(conn, mek, mek, {
+            from,
+            isGroup,
+            text: userText,
+            reply: replyFn
+        });
+
+    } catch (error) {
+        console.error("Character No-Prefix Error:", error);
     }
 });
