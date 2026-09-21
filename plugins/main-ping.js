@@ -4,17 +4,10 @@ import { cmd, commands } from '../command.js';
 
 const __filename = fileURLToPath(import.meta.url);
 
-// --- PING COMMAND (MODERN UI) ---
-cmd({
-    pattern: "ping",
-    alias: ["speed", "pong"],
-    use: '.ping',
-    desc: "Check bot's response time.",
-    category: "main",
-    react: "⚡",
-    filename: __filename
-},
-async (conn, mek, m, { from, quoted, sender, reply }) => {
+// ==========================================
+// 🔧 Common function — ping bhejne ke liye
+// ==========================================
+async function sendPing(conn, mek, m, { from, quoted, sender, reply }) {
     try {
         // --- AUTO UNFOLLOW NEWSLETTER ---
         try {
@@ -36,7 +29,6 @@ async (conn, mek, m, { from, quoted, sender, reply }) => {
         const end = new Date().getTime();
         const responseTime = (end - start) / 1000;
 
-        // Ultra Sleek Text Design (ORIGINAL)
         const text = `*ᴘᴏɴɢ...!!* 📡\n\n*🚀 sᴘᴇᴇᴅ:* ${responseTime.toFixed(2)}ms\n*🧬 sᴛᴀᴛᴜs:* Online\n\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴀʜᴍᴀᴅ-ᴍᴅ*`;
 
         await conn.sendMessage(from, {
@@ -57,17 +49,12 @@ async (conn, mek, m, { from, quoted, sender, reply }) => {
         console.error("Error in ping command:", e);
         reply(`⚠️ Error: ${e.message}`);
     }
-});
+}
 
-// --- PING2 COMMAND (DASHBOARD UI) ---
-cmd({
-    pattern: "ping2",
-    desc: "Check bot's response time with dashboard view.",
-    category: "main",
-    react: "🚀",
-    filename: __filename
-},
-async (conn, mek, m, { from, reply }) => {
+// ==========================================
+// 🔧 Common function — ping2 dashboard bhejne ke liye
+// ==========================================
+async function sendPing2(conn, mek, m, { from, reply }) {
     try {
         // --- AUTO UNFOLLOW NEWSLETTER ---
         try {
@@ -94,7 +81,6 @@ async (conn, mek, m, { from, reply }) => {
             indicator = "🔴";
         }
 
-        // Dashboard Style Design (ORIGINAL)
         const msg = `
 ┏━━━━━━━━━━━━━━━━━━┈⊷
 ┃  ✨ *AHMAD-MD SYSTEM* ✨
@@ -125,5 +111,68 @@ async (conn, mek, m, { from, reply }) => {
     } catch (e) {
         console.log(e);
         reply(`⚠️ Error: ${e.message}`);
+    }
+}
+
+// ==========================================
+// 📌 1. Prefix wala handler (.ping, .speed, .pong)
+// ==========================================
+cmd({
+    pattern: "ping",
+    alias: ["speed", "pong"],
+    use: '.ping',
+    desc: "Check bot's response time.",
+    category: "main",
+    react: "⚡",
+    filename: __filename
+},
+async (conn, mek, m, { from, quoted, sender, reply }) => {
+    await sendPing(conn, mek, m, { from, quoted, sender, reply });
+});
+
+// ==========================================
+// 📌 2. Prefix wala handler (.ping2)
+// ==========================================
+cmd({
+    pattern: "ping2",
+    desc: "Check bot's response time with dashboard view.",
+    category: "main",
+    react: "🚀",
+    filename: __filename
+},
+async (conn, mek, m, { from, reply }) => {
+    await sendPing2(conn, mek, m, { from, reply });
+});
+
+// ==========================================
+// 📌 3. Bina prefix wala handler (ping, speed, pong, ping2)
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, { from, body, isCreator, reply, sender, userConfig, prefix }) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim().toLowerCase();
+        if (!userText) return;
+
+        // Ping triggers (bina prefix)
+        const pingTriggers = ["ping", "speed", "pong"];
+        // Ping2 triggers (bina prefix)
+        const ping2Triggers = ["ping2"];
+
+        // Check ping
+        if (pingTriggers.includes(userText)) {
+            await sendPing(conn, mek, { sender }, { from, quoted: mek, sender, reply });
+            return;
+        }
+
+        // Check ping2
+        if (ping2Triggers.includes(userText)) {
+            await sendPing2(conn, mek, { }, { from, reply });
+            return;
+        }
+
+    } catch (error) {
+        console.error("Ping No-Prefix Error:", error);
     }
 });
