@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 
-// Saari supported emojis ki category mapping
+// Saari supported emojis ki category list
 const allowedCategories = {
     // Sad / Crying / Emotional
     "🥺": ["🥺", "😢", "😭", "🙁", "☹️", "😞", "😓", "😟", "😮‍💨", "💔", "🥀", "🥺"],
@@ -59,23 +59,23 @@ const allowedCategories = {
 };
 
 cmd({
-    on: "body", // On body / text listener bilkul standard format mein
+    pattern: "🥺|🥹|🥲|😮‍💨|😡|🖕|🚩|😂|🤣|😆|😁|😊|🙂|😉|🤗|❤️‍🩹|🫂|🫦|🫠|😫|🫩|🥵|🥶|😎|👻|🌚|🌝|🦋|🌸|💅|🍂|🌹|🌍|🌎|🌑|🌒",
+    desc: "Plays emoji animation",
     category: "tools",
     filename: __filename
-}, async (conn, mek, m, { from, reply, isCreator, body }) => {
+}, async (conn, mek, m, { from, reply, isCreator, command }) => {
     try {
-        if (!isCreator) return;
+        if (!isCreator) {
+            return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
+        }
 
-        // Input text nikalna
-        const textMsg = body || m.text || (m.message && m.message.conversation) || "";
-        const inputEmoji = textMsg.trim();
+        const inputEmoji = command.trim();
 
-        // Agar send ki hui emoji list mein nahi hai toh ignore karein
         if (!allowedCategories[inputEmoji]) return;
 
         const emojiMessages = allowedCategories[inputEmoji];
 
-        // Exact .chumi structure format
+        // Bilkul `.chumi` wali structure
         let currentText = '';
         const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
 
@@ -90,6 +90,6 @@ cmd({
             await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
     } catch (e) {
-        // Silently catch error
+        reply(`❌ *Error!* ${e.message}`);
     }
 });
