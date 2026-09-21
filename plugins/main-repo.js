@@ -19,20 +19,15 @@ const isValidImageUrl = (url) => {
     return imageExtensions.some(ext => urlLower.endsWith(ext));
 };
 
-cmd({
-    pattern: "repo",
-    alias: ["sc", "script", "repository", "deploy"],
-    desc: "Get AHMAD-MD deploy link and information",
-    react: "📂",
-    category: "main",
-    filename: __filename,
-},
-async (conn, mek, m, { from, reply, userConfig }) => {
+// ==========================================
+// 🔧 Common function — repo info bhejne ke liye
+// ==========================================
+async function sendRepoInfo(conn, mek, m, { from, reply, userConfig }) {
     try {
         const BOT_NAME = userConfig?.BOT_NAME || config.BOT_NAME || 'AHMAD-MD';
         const OWNER_NAME = userConfig?.OWNER_NAME || config.OWNER_NAME || 'AHMAD-TECH';
         const BOT_IMAGE = userConfig?.BOT_IMAGE || userConfig?.BOT_MEDIA_URL || config.BOT_IMAGE || config.BOT_MEDIA_URL;
-        
+
         const deployLink = 'https://ahmad-md.vercel.app';
 
         // --- NEW PREMIUM DESIGN ---
@@ -64,7 +59,7 @@ async (conn, mek, m, { from, reply, userConfig }) => {
 
         let imageToUse;
         const localImagePath = path.join(__dirname, '../lib/AHMADmd.jpg');
-        
+
         if (isValidImageUrl(BOT_IMAGE)) {
             try {
                 await axios.head(BOT_IMAGE, { timeout: 3000 });
@@ -79,8 +74,8 @@ async (conn, mek, m, { from, reply, userConfig }) => {
         await conn.sendMessage(from, {
             image: { url: imageToUse },
             caption: formattedInfo,
-            contextInfo: { 
-                mentionedJid: [m.sender],
+            contextInfo: {
+                mentionedJid: [m.sender || mek.sender],
                 forwardingScore: 999,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
@@ -94,5 +89,62 @@ async (conn, mek, m, { from, reply, userConfig }) => {
     } catch (error) {
         console.error("Error in repo command:", error);
         reply("❌ Error: Script fetch nahi ho saki.");
+    }
+}
+
+// ==========================================
+// 📌 1. Prefix wala handler
+// (.repo, .sc, .script, .repository, .deploy)
+// ==========================================
+cmd({
+    pattern: "repo",
+    alias: ["sc", "script", "repository", "deploy"],
+    desc: "Get AHMAD-MD deploy link and information",
+    react: "📂",
+    category: "main",
+    filename: __filename,
+}, async (conn, mek, m, { from, reply, userConfig }) => {
+    await sendRepoInfo(conn, mek, m, { from, reply, userConfig });
+});
+
+// ==========================================
+// 📌 2. Bina prefix wala handler (saare triggers)
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim().toLowerCase();
+        if (!userText) return;
+
+        // Repo triggers (bina prefix)
+        const repoTriggers = ["repo", "sc", "script", "repository", "deploy"];
+
+        // Check: exact match?
+        if (!repoTriggers.includes(userText)) return;
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Repo info bhejo
+        await sendRepoInfo(conn, mek, { sender }, {
+            from,
+            reply: replyFn,
+            userConfig
+        });
+
+    } catch (error) {
+        console.error("Repo No-Prefix Error:", error);
     }
 });
