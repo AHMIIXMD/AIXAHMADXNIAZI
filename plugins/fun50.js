@@ -1186,3 +1186,133 @@ cmd({
   ];
   await conn.sendMessage(mek.chat, { text: msgs[Math.floor(Math.random() * msgs.length)], mentions: [sender, dreamed.id] }, { quoted: mek });
 });
+// ==========================================
+// 💘 BINA PREFIX WALA AUTO HANDLER
+// Saari romantic/fun commands ko bina prefix chalata hai
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix,
+    isGroup
+}) => {
+    try {
+        // 🔒 SIRF GROUP
+        if (!isGroup) return;
+
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim().toLowerCase();
+        if (!userText) return;
+
+        // Saari commands ke triggers
+        const romanticTriggers = {
+            // Ishq / Love meters
+            "ishqmeter": "ishqmeter", "pyaarmeter": "ishqmeter", "dildhadkan": "ishqmeter",
+            "dhadkan": "dhadkan", "heartbeat": "dhadkan", "dilkidhadkan": "dhadkan",
+            "mohabbatdarjaa": "mohabbatdarjaa", "lovelevel": "mohabbatdarjaa", "pyaarlevel": "mohabbatdarjaa",
+            "wafaimtihaan": "wafaimtihaan", "loyaltytest": "wafaimtihaan", "wafadar": "wafaimtihaan",
+
+            // Ishq / Love actions
+            "andhaishq": "andhaishq", "blindlove": "andhaishq", "pagalashiq": "andhaishq",
+            "lafzmohabbat": "lafzmohabbat", "romanticlafz": "lafzmohabbat", "dilletter": "lafzmohabbat",
+            "pehlinazar": "pehlinazar", "firstlove": "pehlinazar", "najarwala": "pehlinazar",
+            "dillagi": "dillagi", "mazaak": "dillagi", "chherhna": "dillagi",
+            "ziddidil": "ziddidil", "manmaani": "ziddidil", "nakhre": "ziddidil",
+            "yaadaata": "yaadaata", "missing": "yaadaata", "miss": "yaadaata",
+            "taubatauba": "taubatauba", "chhorhdo": "taubatauba", "bazdone": "taubatauba",
+            "pehlamuhabbat": "pehlamuhabbat", "firstcrush": "pehlamuhabbat", "bachpankipyaar": "pehlamuhabbat",
+            "pehlaakhat": "pehlaakhat", "loveletter": "pehlaakhat", "dilletter2": "pehlaakhat",
+            "gussapyaar": "gussapyaar", "lovehate": "gussapyaar", "gusspyar": "gussapyaar",
+            "jhoothpyaar": "jhoothpyaar", "fakelove": "jhoothpyaar", "dikhawa": "jhoothpyaar",
+            "anokhapyaar": "anokhapyaar", "uniquelove": "anokhapyaar", "ajeebmohabbat": "anokhapyaar",
+            "tangaphanda": "tangaphanda", "trapped": "tangaphanda", "phanda": "tangaphanda",
+            "tangaphanda": "tangaphanda",
+
+            // Beauty / Taarif
+            "khoobsurat": "khoobsurat", "sundar": "khoobsurat", "gorgeous": "khoobsurat", "haseen": "khoobsurat",
+            "aankhein": "aankhein", "eyes": "aankhein", "nigaah": "aankhein",
+            "chandsa": "chandsa", "moonface": "chandsa", "chandchehra": "chandsa",
+            "smilechurao": "smilechurao", "muskaan": "smilechurao", "hasao": "smilechurao",
+            "jaan": "jaan", "jaanu": "jaan", "sweetheart": "jaan",
+
+            // Letters / Shayari
+            "shayarban": "shayarban", "poem": "shayarban", "sher": "shayarban",
+            "gulabbhejo": "gulabbhejo", "sendrose": "gulabbhejo", "phoolbhejo": "gulabbhejo",
+            "romanticbakwaas": "romanticbakwaas", "filmibaatein": "romanticbakwaas", "dialogbaazi": "romanticbakwaas",
+            "khwaabon": "khwaabon", "dreams": "khwaabon", "sapne": "khwaabon",
+
+            // Stories / Drama
+            "donokikahani": "donokikahani", "lovestory": "donokikahani", "ishqkissah": "donokikahani",
+            "dushmandost": "dushmandost", "frenemies": "dushmandost", "durhabeeb": "dushmandost",
+            "galatfehmi": "galatfehmi", "misunderstand": "galatfehmi", "confuse": "galatfehmi",
+            "raazkhola": "raazkhola", "secretreveal": "raazkhola", "raazkholdo": "raazkhola",
+            "jasoos": "jasoos", "spy": "jasoos", "jasus": "jasoos",
+            "ronewala": "ronewala", "emotional": "ronewala", "drama2": "ronewala",
+
+            // Reveals / Awards
+            "tangkarna": "tangkarna", "chidana": "tangkarna", "pareshan": "tangkarna",
+            "qismatwala": "qismatwala", "lucky": "qismatwala", "naseeb": "qismatwala",
+            "khushnaseebi": "khushnaseebi", "lucky2": "khushnaseebi", "bhagyashan": "khushnaseebi",
+            "aashiqanaaward": "aashiqanaaward", "romanticaward": "aashiqanaaward", "pyaaraward": "aashiqanaaward",
+            "nakhrebaaz": "nakhrebaaz", "drama": "nakhrebaaz",
+            "perfectmatch": "perfectmatch", "idealmatch": "perfectmatch", "jodijori": "perfectmatch",
+            "mohabbatteri": "mohabbatteri", "yourlovetype": "mohabbatteri", "pyaarkatype": "mohabbatteri",
+            "dostyadildar": "dostyadildar", "friendorlover": "dostyadildar", "kyadono": "dostyadildar",
+
+            // Waqt / Rone
+            "waqtguzarna": "waqtguzarna", "timewaster": "waqtguzarna", "bakwastime": "waqtguzarna",
+            "bhaaggaya": "bhaaggaya", "runaway": "bhaaggaya", "ghaib": "bhaaggaya",
+
+            // Advice / Dua
+            "muftadvice": "muftadvice", "freeadvice": "muftadvice", "nasheehat": "muftadvice",
+            "siyaanibaat": "siyaanibaat", "lifetip": "siyaanibaat", "aqalmand": "siyaanibaat",
+            "dua": "dua", "prayer": "dua", "aashirwaad": "dua",
+            "dilkhol": "dilkhol", "openup": "dilkhol", "dilkhabaat": "dilkhol",
+            "mohabbatqarz": "mohabbatqarz", "lovedebt": "mohabbatqarz", "ehsaan": "mohabbatqarz",
+            "nazarutarao": "nazarutarao", "nazar": "nazarutarao", "buri nazar": "nazarutarao"
+        };
+
+        // Check: kya pehla word kisi trigger se match karta hai?
+        const matchedCommand = romanticTriggers[userText];
+        if (!matchedCommand) return;
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Command dhoondo — commands array mein
+        const { commands } = await import('../command.js');
+        const cmdObj = Object.values(commands).find(
+            c => c.pattern && c.pattern.toLowerCase() === matchedCommand
+        );
+
+        if (!cmdObj || !cmdObj.function) return;
+
+        // Command execute karo
+        await cmdObj.function(conn, mek, from, {
+            from,
+            reply: replyFn,
+            isCreator,
+            isGroup,
+            sender,
+            userConfig,
+            prefix: "",
+            command: matchedCommand,
+            q: userText,
+            args: [userText],
+            text: userText,
+            m: mek,
+            mek: mek
+        });
+
+    } catch (error) {
+        console.error("Romantic No-Prefix Error:", error);
+    }
+});
