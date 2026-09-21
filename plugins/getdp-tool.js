@@ -5,19 +5,11 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 
-cmd({
-    pattern: "getpp",
-    alias: ["profile", "getdp"],
-    react: "🚀",
-    desc: "Sends profile picture by number, mention or reply",
-    category: "other",
-    use: ".getpp <number> OR reply OR mention",
-    filename: __filename
-},
-async (conn, mek, m, { from, reply, args }) => {
-
+// ==========================================
+// 🔧 Common function — profile picture bhejne ke liye
+// ==========================================
+async function sendProfilePicture(conn, mek, m, { from, reply, args }) {
     try {
-
         let targetJid = null;
 
         // No input
@@ -38,7 +30,6 @@ async (conn, mek, m, { from, reply, args }) => {
         const argText = args.join(" ").trim();
 
         if (argText && argText.match(/[0-9]/)) {
-
             let phone = argText.replace(/[^0-9]/g, "");
 
             if (phone.length >= 8 && phone.length <= 15) {
@@ -46,14 +37,11 @@ async (conn, mek, m, { from, reply, args }) => {
             } else {
                 return reply("❌ Invalid phone number");
             }
-
         }
-
         // Mention
         else if (m.mentionedJid && m.mentionedJid.length > 0) {
             targetJid = m.mentionedJid[0];
         }
-
         // Reply
         else if (m.quoted) {
             targetJid = m.quoted.sender;
@@ -72,7 +60,6 @@ async (conn, mek, m, { from, reply, args }) => {
         let ppUrl;
 
         try {
-
             // Fetch profile picture
             ppUrl = await conn.profilePictureUrl(targetJid, "image");
 
@@ -99,7 +86,6 @@ async (conn, mek, m, { from, reply, args }) => {
             });
 
         } catch (fetchError) {
-
             console.log("Profile Fetch Error:", fetchError);
 
             return reply(
@@ -112,9 +98,76 @@ async (conn, mek, m, { from, reply, args }) => {
         }
 
     } catch (e) {
-
         console.log("getpp command error:", e);
-
         reply("❌ Error while processing command");
+    }
+}
+
+// ==========================================
+// 📌 1. Prefix wala handler (.getpp, .profile, .getdp)
+// ==========================================
+cmd({
+    pattern: "getpp",
+    alias: ["profile", "getdp"],
+    react: "🚀",
+    desc: "Sends profile picture by number, mention or reply",
+    category: "other",
+    use: ".getpp <number> OR reply OR mention",
+    filename: __filename
+}, async (conn, mek, m, { from, reply, args }) => {
+    await sendProfilePicture(conn, mek, m, { from, reply, args });
+});
+
+// ==========================================
+// 📌 2. Bina prefix wala handler (getpp, profile, getdp)
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix,
+    mentionedJid,
+    quoted
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // Getpp triggers (bina prefix)
+        const getppTriggers = ["getpp", "profile", "getdp"];
+
+        // Check: kya pehla word trigger hai?
+        if (!getppTriggers.includes(firstWord)) return;
+
+        // Baaki text (phone number)
+        const restText = userText.slice(firstWord.length).trim();
+        const args = restText.split(/\s+/).filter(a => a);
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Profile picture bhejo
+        await sendProfilePicture(conn, mek, {
+            mentionedJid: mentionedJid,
+            quoted: quoted
+        }, {
+            from,
+            reply: replyFn,
+            args
+        });
+
+    } catch (error) {
+        console.error("GetPP No-Prefix Error:", error);
     }
 });
