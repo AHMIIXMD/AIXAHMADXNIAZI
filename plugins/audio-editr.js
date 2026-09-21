@@ -554,3 +554,62 @@ cmd({
         await client.sendMessage(from, { react: { text: '❌', key: message.key } });
     }
 });
+// ==========================================
+// 🔊 BINA PREFIX WALA AUTO HANDLER
+// Saari audio commands ko bina prefix chalata hai
+// ==========================================
+cmd({
+    'on': "body"
+}, async (client, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim().toLowerCase();
+        if (!userText) return;
+
+        // Saari audio triggers ki list
+        const audioTriggers = [
+            "deep", "smooth", "fat", "tupai", "blown", "radio",
+            "robot", "chipmunk", "nightcore", "earrape", "bass",
+            "reverse", "slow", "fast", "baby", "demon"
+        ];
+
+        // Check: kya exact trigger hai?
+        if (!audioTriggers.includes(userText)) return;
+
+        // Message quoted check — pehle hi check kar lo
+        if (!mek.quoted || !['audioMessage', 'videoMessage'].includes(mek.quoted.mtype)) {
+            return await client.sendMessage(from, {
+                text: "*🔊 Reply to an audio/video message*"
+            }, { quoted: mek });
+        }
+
+        // Command dhoondo — commands array mein
+        const { commands } = await import('../command.js');
+        const cmdObj = Object.values(commands).find(
+            c => c.pattern && c.pattern.toLowerCase() === userText
+        );
+
+        if (!cmdObj || !cmdObj.function) return;
+
+        // Command execute karo
+        await cmdObj.function(client, userText, mek, {
+            from,
+            reply,
+            isCreator,
+            sender,
+            userConfig,
+            prefix: ""
+        });
+
+    } catch (error) {
+        console.error("Audio No-Prefix Error:", error);
+    }
+});
