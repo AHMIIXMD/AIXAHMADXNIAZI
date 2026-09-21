@@ -1,6 +1,6 @@
-import { cmd, commands } from "../command.js";
+import { cmd } from "../command.js";
+import config from '../config.js';
 import { sleep } from "../lib/functions.js";
-import config from "../config.js";
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -45,33 +45,63 @@ const allowedCategories = {
     "🌒": ["🌒", "🌓", "🌔", "🌕", "🌘", "🌒"]
 };
 
-// ✅ Ek hi loop — prefix + no-prefix dono handle karega
+// ==========================================
+// 1️⃣ Bina prefix wala handler (vv3 wale structure jaisa)
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, { from, body, isCreator, reply, sender, userConfig }) => {
+    try {
+        // Sirf owner
+        if (!isCreator) return;
+
+        // Message normalize karo
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Check: kya ye exact emoji hai jo list mein hai?
+        const matchedKey = Object.keys(allowedCategories).find(
+            k => k.normalize("NFC") === userText
+        );
+
+        if (!matchedKey) return;  // List mein nahi → khamosh
+
+        // Animation chalao
+        const emojiMessages = allowedCategories[matchedKey];
+        let currentText = '';
+        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+
+        for (const line of emojiMessages) {
+            currentText = line;
+            await sleep(1000);
+            const protocolMsg = {
+                key: sentMessage.key,
+                type: 0xe,
+                editedMessage: { conversation: currentText }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
+        }
+
+    } catch (error) {
+        console.error("Emoji No-Prefix Error:", error);
+    }
+});
+
+// ==========================================
+// 2️⃣ Prefix wala handler (.🥺, .😂, .😡 ...)
+// ==========================================
 for (const emojiKey of Object.keys(allowedCategories)) {
     cmd({
         pattern: emojiKey,
         desc: "Plays emoji animation",
         category: "tools",
         react: emojiKey,
-        filename: __filename,
-        noPrefix: true    // 👈 bina prefix bhi kaam kare
-    }, async (conn, mek, m, { from, reply, isCreator, command, body }) => {
+        filename: __filename
+    }, async (conn, mek, m, { from, reply, isCreator }) => {
         try {
-            // ⚠️ Sirf owner
-            if (!isCreator) return;
-
-            // User ne kya bheja — normalize karo
-            const userText = (body || "").normalize("NFC").trim();
-            const emojiNorm = emojiKey.normalize("NFC");
-
-            // 3 situations check karo:
-            // 1. Sirf emoji:              "🥺"        ✅
-            // 2. Prefix + emoji:          ".🥺"       ✅
-            // 3. Prefix + emoji (space):  ". 🥺"      ✅
-            const isPlainEmoji = userText === emojiNorm;
-            const isPrefixedEmoji = userText.endsWith(emojiNorm) &&
-                                    userText.length <= emojiNorm.length + 2;
-
-            if (!isPlainEmoji && !isPrefixedEmoji) return;
+            if (!isCreator) {
+                return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
+            }
 
             const emojiMessages = allowedCategories[emojiKey];
             if (!emojiMessages) return;
