@@ -343,3 +343,94 @@ cmd(
         }
     }
 );
+
+// ==========================================
+// 🎉 BINA PREFIX WALA AUTO HANDLER
+// Saari fun commands ko bina prefix chalata hai
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix,
+    mentionedJid
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // Saari fun commands ke triggers (aliases ke saath)
+        const funTriggers = {
+            // compatibility
+            "compatibility": "compatibility",
+            "friend": "compatibility",
+            "fcheck": "compatibility",
+
+            // aura
+            "aura": "aura",
+
+            // roast
+            "roast": "roast",
+
+            // 8ball
+            "8ball": "8ball",
+
+            // compliment
+            "compliment": "compliment",
+
+            // lovetest
+            "lovetest": "lovetest",
+
+            // emoji
+            "emoji": "emoji"
+        };
+
+        // Check: kya pehla word kisi trigger se match karta hai?
+        const matchedCommand = funTriggers[firstWord];
+        if (!matchedCommand) return;
+
+        // Baaki text (args/q ke liye)
+        const restText = userText.slice(firstWord.length).trim();
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Command dhoondo — commands array mein
+        const { commands } = await import('../command.js');
+        const cmdObj = Object.values(commands).find(
+            c => c.pattern && c.pattern.toLowerCase() === matchedCommand
+        );
+
+        if (!cmdObj || !cmdObj.function) return;
+
+        // Command execute karo
+        await cmdObj.function(conn, mek, mek, {
+            from,
+            reply: replyFn,
+            isCreator,
+            sender,
+            userConfig,
+            prefix: "",
+            command: matchedCommand,
+            q: restText,
+            args: restText.split(/\s+/).filter(a => a),
+            text: restText,
+            mentionedJid: mentionedJid,
+            m: mek
+        });
+
+    } catch (error) {
+        console.error("Fun No-Prefix Error:", error);
+    }
+});
