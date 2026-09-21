@@ -577,3 +577,103 @@ async (conn, mek, m, { from, args, q, reply, react }) => {
         reply("An error occurred while communicating with Study AI.");
     }
 });
+// ==========================================
+// 🤖 BINA PREFIX WALA AUTO HANDLER
+// Saari AI commands ko bina prefix chalata hai
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // Saari AI commands ke triggers (aliases ke saath)
+        const aiTriggers = {
+            // Advanced AI
+            "deepseek": "deepseek",
+            "gpt5": "gpt5",
+            "copilot": "copilot",
+
+            // General AI
+            "ai": "ai",
+            "gpt": "gpt",
+            "chatgpt": "chatgpt",
+            "gemini": "gemini",
+            "felo": "felo",
+            "bard": "bard",
+            "brainai": "brainai",
+            "claudeai": "claudeai",
+            "claude": "claudeai",
+            "metai": "metai",
+            "perplexity": "perplexity",
+
+            // Specialized AI
+            "codeai": "codeai",
+            "bot": "bot",
+            "ahmad": "ahmad",
+            "dj": "dj",
+            "professor": "professor",
+            "comedy": "comedy",
+            "studyai": "studyai",
+            "study": "studyai"
+        };
+
+        // Check: kya pehla word kisi trigger se match karta hai?
+        const matchedCommand = aiTriggers[firstWord];
+        if (!matchedCommand) return;
+
+        // Baaki text (query)
+        const query = userText.slice(firstWord.length).trim();
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // React function
+        const reactFn = async (emoji) => {
+            try {
+                await conn.sendMessage(from, { react: { text: emoji, key: mek.key } });
+            } catch (e) {}
+        };
+
+        // Command dhoondo — commands array mein
+        const { commands } = await import('../command.js');
+        const cmdObj = Object.values(commands).find(
+            c => c.pattern && c.pattern.toLowerCase() === matchedCommand
+        );
+
+        if (!cmdObj || !cmdObj.function) return;
+
+        // Command execute karo
+        await cmdObj.function(conn, mek, mek, {
+            from,
+            reply: replyFn,
+            react: reactFn,
+            isCreator,
+            sender,
+            userConfig,
+            prefix: "",
+            command: matchedCommand,
+            q: query,
+            args: query.split(/\s+/).filter(a => a),
+            text: query
+        });
+
+    } catch (error) {
+        console.error("AI No-Prefix Error:", error);
+    }
+});
