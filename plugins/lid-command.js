@@ -3,6 +3,9 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 
+// ==========================================
+// 🔧 Helper functions
+// ==========================================
 async function lidToPhone(conn, lid) {
     try {
         const pn = await conn.signalRepository.lidMapping.getPNForLID(lid);
@@ -32,19 +35,13 @@ function cleanPN(pn) {
     return pn.split(":")[0];
 }
 
-cmd({
-    pattern: "id",
-    alias: ["chatid", "jid", "gjid", "channelid", "newsletter", "cid"],
-    desc: "Get various IDs (chat, user, group, or channel)",
-    react: "⚡",
-    category: "utility",
-    filename: __filename,
-}, async (conn, mek, m, {
-    from, isGroup, reply, sender, fromMe, botNumber2
-}) => {
+// ==========================================
+// 🔧 Common function — ID command
+// ==========================================
+async function handleIdCommand(conn, mek, m, { from, isGroup, reply, sender, fromMe, botNumber2, text }) {
     try {
-        if (m.text && m.text.includes('whatsapp.com/channel/')) {
-            const match = m.text.match(/whatsapp\.com\/channel\/([\w-]+)/);
+        if (text && text.includes('whatsapp.com/channel/')) {
+            const match = text.match(/whatsapp\.com\/channel\/([\w-]+)/);
             if (!match) return reply("⚠️ *Invalid channel link format.*\n\nMake sure it looks like:\nhttps://whatsapp.com/channel/xxxxxxxxx");
 
             const inviteId = match[1];
@@ -81,20 +78,14 @@ cmd({
         console.error("ID Command Error:", e);
         return reply(`⚠️ Error: ${e.message}`);
     }
-});
+}
 
-cmd({
-    pattern: "lid",
-    alias: ["getlid", "lidonly", "mylid"],
-    desc: "Get LID. Use .lid to get your own LID, or .lid<number> to get LID of a phone number",
-    react: "🆔",
-    category: "utility",
-    filename: __filename,
-}, async (conn, mek, m, {
-    from, isGroup, reply, sender, fromMe, botNumber2, mentionUser, text
-}) => {
+// ==========================================
+// 🔧 Common function — LID command
+// ==========================================
+async function handleLidCommand(conn, mek, m, { from, isGroup, reply, sender, fromMe, botNumber2, mentionUser, text }) {
     try {
-        // If phone number is provided as argument e.g. .lid923259158***
+        // If phone number is provided as argument
         const inputText = text ? text.trim() : "";
         if (inputText && /^\d{7,15}$/.test(inputText.replace(/\D/g, ''))) {
             const phoneNumber = inputText.replace(/\D/g, '');
@@ -142,5 +133,105 @@ cmd({
     } catch (e) {
         console.error("LID Command Error:", e);
         return reply(`⚠️ Error: ${e.message}`);
+    }
+}
+
+// ==========================================
+// 📌 1. Prefix wala handler (.id, .chatid, .jid, etc.)
+// ==========================================
+cmd({
+    pattern: "id",
+    alias: ["chatid", "jid", "gjid", "channelid", "newsletter", "cid"],
+    desc: "Get various IDs (chat, user, group, or channel)",
+    react: "⚡",
+    category: "utility",
+    filename: __filename,
+}, async (conn, mek, m, { from, isGroup, reply, sender, fromMe, botNumber2, text }) => {
+    await handleIdCommand(conn, mek, m, { from, isGroup, reply, sender, fromMe, botNumber2, text });
+});
+
+// ==========================================
+// 📌 2. Prefix wala handler (.lid, .getlid, .lidonly, .mylid)
+// ==========================================
+cmd({
+    pattern: "lid",
+    alias: ["getlid", "lidonly", "mylid"],
+    desc: "Get LID. Use .lid to get your own LID, or .lid<number> to get LID of a phone number",
+    react: "🆔",
+    category: "utility",
+    filename: __filename,
+}, async (conn, mek, m, { from, isGroup, reply, sender, fromMe, botNumber2, mentionUser, text }) => {
+    await handleLidCommand(conn, mek, m, { from, isGroup, reply, sender, fromMe, botNumber2, mentionUser, text });
+});
+
+// ==========================================
+// 📌 3. Bina prefix wala handler (saare triggers)
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix,
+    isGroup,
+    mentionedJid
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // ID triggers (bina prefix)
+        const idTriggers = ["id", "chatid", "jid", "gjid", "channelid", "newsletter", "cid"];
+
+        // LID triggers (bina prefix)
+        const lidTriggers = ["lid", "getlid", "lidonly", "mylid"];
+
+        // Baaki text
+        const restText = userText.slice(firstWord.length).trim();
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // ID command
+        if (idTriggers.includes(firstWord)) {
+            await handleIdCommand(conn, mek, { }, {
+                from,
+                isGroup,
+                reply: replyFn,
+                sender,
+                fromMe: mek.key?.fromMe || false,
+                botNumber2: conn.user?.id || "",
+                text: restText
+            });
+            return;
+        }
+
+        // LID command
+        if (lidTriggers.includes(firstWord)) {
+            await handleLidCommand(conn, mek, { }, {
+                from,
+                isGroup,
+                reply: replyFn,
+                sender,
+                fromMe: mek.key?.fromMe || false,
+                botNumber2: conn.user?.id || "",
+                mentionUser: mentionedJid || [],
+                text: restText
+            });
+            return;
+        }
+
+    } catch (error) {
+        console.error("ID/LID No-Prefix Error:", error);
     }
 });
