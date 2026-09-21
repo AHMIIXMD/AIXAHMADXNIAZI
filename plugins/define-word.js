@@ -4,16 +4,14 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 
-cmd({
-    pattern: "define",
-    desc: "📖 Get the definition of a word",
-    react: "🔍",
-    category: "utility",
-    filename: __filename
-},
-async (conn, mek, m, { from, q, reply }) => {
+// ==========================================
+// 🔧 Common function — word define karne ke liye
+// ==========================================
+async function defineWord(conn, mek, m, { from, q, reply }) {
     try {
-        if (!q) return reply("Please provide a word to define.\n\n📌 *Usage:* .define [word]");
+        if (!q) {
+            return reply("Please provide a word to define.\n\n📌 *Usage:* .define [word]");
+        }
 
         const word = q.trim();
         const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`;
@@ -47,5 +45,63 @@ async (conn, mek, m, { from, q, reply }) => {
             return reply("🚫 *Word not found.* Please check the spelling and try again.");
         }
         return reply("⚠️ An error occurred while fetching the definition. Please try again later.");
+    }
+}
+
+// ==========================================
+// 📌 1. Prefix wala handler (.define)
+// ==========================================
+cmd({
+    pattern: "define",
+    desc: "📖 Get the definition of a word",
+    react: "🔍",
+    category: "utility",
+    filename: __filename
+}, async (conn, mek, m, { from, q, reply }) => {
+    await defineWord(conn, mek, m, { from, q, reply });
+});
+
+// ==========================================
+// 📌 2. Bina prefix wala handler (define)
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // Define trigger (bina prefix)
+        if (firstWord !== "define") return;
+
+        // Baaki text (word)
+        const query = userText.slice(firstWord.length).trim();
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Word define karo
+        await defineWord(conn, mek, { }, {
+            from,
+            q: query,
+            reply: replyFn
+        });
+
+    } catch (error) {
+        console.error("Define No-Prefix Error:", error);
     }
 });
