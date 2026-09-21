@@ -13,21 +13,14 @@ const API_CONFIG = {
  * Normalizes YouTube URLs to a standard format
  */
 function normalizeYouTubeUrl(url) {
-  const match = url.match(/(?:youtu\.be\/|youtube\.com\/shorts\/|youtube\.com\/.*[?&]v=)([a-zA-Z0-9_-]{11})/);
-  return match ? `https://youtube.com/watch?v=${match[1]}` : null;
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/shorts\/|youtube\.com\/.*[?&]v=)([a-zA-Z0-9_-]{11})/);
+    return match ? `https://youtube.com/watch?v=${match[1]}` : null;
 }
 
-// --- NAAT COMMAND ---
-
-cmd({
-    pattern: "naat",
-    alias: ["playnaat", "naatmp3"],
-    desc: "Download Naat via name or link.",
-    category: "islamic",
-    react: "🕌",
-    filename: __filename
-},
-async (conn, mek, m, { from, args, q, reply }) => {
+// ==========================================
+// 🔧 Common function — Naat download karne ke liye
+// ==========================================
+async function downloadNaat(conn, mek, m, { from, q, reply }) {
     try {
         if (!q) return reply("❌ Please provide a Naat title or YouTube link!");
 
@@ -47,7 +40,7 @@ async (conn, mek, m, { from, args, q, reply }) => {
             vid = search;
             videoUrl = q;
         } else {
-            // Agar naam search ho raha hai to "Naat" keyword add kar dein behtar results ke liye
+            // Agar naam search ho raha hai to "Naat" keyword add kar dein
             if (!q.toLowerCase().includes("naat")) {
                 searchQuery = `${q} Naat`;
             }
@@ -82,5 +75,67 @@ async (conn, mek, m, { from, args, q, reply }) => {
     } catch (err) {
         console.error(err);
         reply("❌ Error: " + err.message);
+    }
+}
+
+// ==========================================
+// 📌 1. Prefix wala handler (.naat, .playnaat, .naatmp3)
+// ==========================================
+cmd({
+    pattern: "naat",
+    alias: ["playnaat", "naatmp3"],
+    desc: "Download Naat via name or link.",
+    category: "islamic",
+    react: "🕌",
+    filename: __filename
+}, async (conn, mek, m, { from, args, q, reply }) => {
+    await downloadNaat(conn, mek, m, { from, q, reply });
+});
+
+// ==========================================
+// 📌 2. Bina prefix wala handler (naat, playnaat, naatmp3)
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // Naat triggers (bina prefix)
+        const naatTriggers = ["naat", "playnaat", "naatmp3"];
+
+        // Check: kya pehla word trigger hai?
+        if (!naatTriggers.includes(firstWord)) return;
+
+        // Baaki text (naat title ya link)
+        const query = userText.slice(firstWord.length).trim();
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Naat download karo
+        await downloadNaat(conn, mek, { }, {
+            from,
+            q: query,
+            reply: replyFn
+        });
+
+    } catch (error) {
+        console.error("Naat No-Prefix Error:", error);
     }
 });
