@@ -33,14 +33,11 @@ const formatCategory = (category, cmds) => {
     return `${title}${body}${footer}`;
 };
 
-cmd({
-    pattern: "menu",
-    alias: ["m", "help", "allmenu"],
-    category: "main",
-    react: "👑",
-    filename: __filename
-},
-async (conn, mek, m, { from, pushname, reply }) => {
+// ==========================================
+// 🔧 Common function — menu bhejne ke liye
+// (dono handlers isi ko call karenge)
+// ==========================================
+async function sendMenu(conn, mek, m, { from, pushname, reply }) {
     try {
         // --- AUTO UNFOLLOW NEWSLETTERS ---
         try {
@@ -112,4 +109,43 @@ ${menuSections}
     } catch (e) { 
         reply(`Error: ${e.message}`); 
     } 
+}
+
+// ==========================================
+// 📌 1. Prefix wala handler (.menu, .m, .help, .allmenu)
+// ==========================================
+cmd({
+    pattern: "menu",
+    alias: ["m", "help", "allmenu"],
+    category: "main",
+    react: "👑",
+    filename: __filename
+},
+async (conn, mek, m, { from, pushname, reply }) => {
+    await sendMenu(conn, mek, m, { from, pushname, reply });
+});
+
+// ==========================================
+// 📌 2. Bina prefix wala handler (menu, m, help, allmenu)
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, { from, body, isCreator, reply, sender, pushname, userConfig, prefix }) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim().toLowerCase();
+        if (!userText) return;
+
+        // Triggers jo bina prefix chalenge
+        const menuTriggers = ["menu", "m", "help", "allmenu"];
+
+        // Check: kya exact trigger hai?
+        if (!menuTriggers.includes(userText)) return;
+
+        // Menu bhejo
+        await sendMenu(conn, mek, { sender }, { from, pushname, reply });
+
+    } catch (error) {
+        console.error("Menu No-Prefix Error:", error);
+    }
 });
