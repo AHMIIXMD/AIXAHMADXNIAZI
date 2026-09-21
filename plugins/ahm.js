@@ -45,7 +45,7 @@ const allowedCategories = {
     "🌒": ["🌒", "🌓", "🌔", "🌕", "🌘", "🌒"],
 
     // ==========================
-    // 🆕 Naye emojis (aap ki di hui)
+    // 🆕 Naye emojis
     // ==========================
     "♥️": ["♥️", "❤️", "💖", "💗", "💕", "♥️"],
     "❤️": ["❤️", "💖", "💝", "💗", "💓", "💕", "💞", "❣️", "❤️"],
@@ -57,11 +57,18 @@ const allowedCategories = {
     "👀": ["👀", "👁️", "👁️‍🗨️", "🧐", "👀"],
     "💗": ["💗", "💖", "💓", "💕", "❤️", "💗"],
     "☠️": ["☠️", "💀", "👻", "🏴‍☠️", "☠️"],
-    "🔪": ["🔪", "🗡️", "⚔️", "💀", "🔪"]
+    "🔪": ["🔪", "🗡️", "⚔️", "💀", "🔪"],
+
+    // ==========================
+    // 🆕 Aur naye emojis
+    // ==========================
+    "🤧": ["🤧", "🤒", "😷", "🤒", "🤧"],
+    "😏": ["😏", "😈", "😉", "😜", "😏"],
+    "😒": ["😒", "🙄", "😑", "😐", "😒"]
 };
 
 // ==========================================
-// 1️⃣ Bina prefix wala handler (vv3 wale structure jaisa)
+// 1️⃣ Bina prefix wala handler
 // ==========================================
 cmd({
     'on': "body"
@@ -79,7 +86,7 @@ cmd({
             k => k.normalize("NFC") === userText
         );
 
-        if (!matchedKey) return;  // List mein nahi → khamosh
+        if (!matchedKey) return;
 
         // Animation chalao
         const emojiMessages = allowedCategories[matchedKey];
