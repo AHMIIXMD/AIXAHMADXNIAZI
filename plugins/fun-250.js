@@ -1525,3 +1525,203 @@ cmd({
     mentions: [sender, forever.id]
   }, { quoted: mek });
 });
+
+// ==========================================
+// 🎉 BINA PREFIX WALA AUTO HANDLER
+// Saari 50 fun commands ko bina prefix chalata hai
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix,
+    isGroup,
+    groupMetadata,
+    mentionedJid
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // Saari 50 fun commands ke triggers (aliases ke saath)
+        const funTriggers = {
+            // 1
+            "akela": "akela", "alone": "akela", "single4ever": "akela",
+            // 2
+            "bewafa": "bewafa", "betrayal": "bewafa", "dhoka": "bewafa",
+            // 3
+            "chakkar": "chakkar", "dizzy": "chakkar", "confused2": "chakkar",
+            // 4
+            "ullubana": "ullubana", "prank": "ullubana", "fooling": "ullubana",
+            // 5
+            "taalibajao": "taalibajao", "clap": "taalibajao", "shukriya": "taalibajao",
+            // 6
+            "neendurai": "neendurai", "sleepstealer": "neendurai", "insomnia": "neendurai",
+            // 7
+            "chatpata": "chatpata", "spicy": "chatpata", "teekha": "chatpata",
+            // 8
+            "waitingroom": "waitingroom", "waitkaro": "waitingroom", "doubletch": "waitingroom",
+            // 9
+            "taj": "taj", "crown": "taj", "king": "taj", "queen": "taj",
+            // 10
+            "lafangaa": "lafangaa", "naughty": "lafangaa", "shararat": "lafangaa",
+            // 11
+            "chocolatewala": "chocolatewala", "meetha": "chocolatewala", "sweet": "chocolatewala",
+            // 12
+            "baatkaatna": "baatkaatna", "interrupt": "baatkaatna", "beechmein": "baatkaatna",
+            // 13
+            "palat": "palat", "turnback": "palat", "wapasaa": "palat",
+            // 14
+            "gaanasunao": "gaanasunao", "dedicate": "gaanasunao", "song4u": "gaanasunao",
+            // 15
+            "haaththamna": "haaththamna", "handhold": "haaththamna", "saathchalo": "haaththamna",
+            // 16
+            "chuprahna": "chuprahna", "silence": "chuprahna", "khaamoshi": "chuprahna",
+            // 17
+            "phoolonkahaar": "phoolonkahaar", "garland": "phoolonkahaar", "mala": "phoolonkahaar",
+            // 18
+            "ghoordekhna": "ghoordekhna", "stare": "ghoordekhna", "nigahein": "ghoordekhna",
+            // 19
+            "bahaana": "bahaana", "excuse": "bahaana", "bakwaasreason": "bahaana",
+            // 20
+            "tarkeeb": "tarkeeb", "plan": "tarkeeb", "jugaad": "tarkeeb",
+            // 21
+            "hassichhupa": "hassichhupa", "hidingsmile": "hassichhupa", "musakura": "hassichhupa",
+            // 22
+            "mobileband": "mobileband", "putdown": "mobileband", "offkaro": "mobileband",
+            // 23
+            "pagalpancert": "pagalpancert", "crazycert": "pagalpancert", "diwanapan": "pagalpancert",
+            // 24
+            "wallpaper": "wallpaper", "lockscreen": "wallpaper", "screensaver": "wallpaper",
+            // 25
+            "donobaat": "donobaat", "talkboth": "donobaat", "batcheet": "donobaat",
+            // 26
+            "kaanpakadna": "kaanpakadna", "sorry2": "kaanpakadna", "maafi": "kaanpakadna",
+            // 27
+            "taqdir": "taqdir", "fate": "taqdir", "muqaddar": "taqdir",
+            // 28
+            "kapkapi": "kapkapi", "nervous": "kapkapi", "darana": "kapkapi",
+            // 29
+            "taarifcommit": "taarifcommit", "compliment2": "taarifcommit", "sachsach": "taarifcommit",
+            // 30
+            "captioncontest": "captioncontest", "caption": "captioncontest", "caption4u": "captioncontest",
+            // 31
+            "zyadasocha": "zyadasocha", "overthink": "zyadasocha", "dimaaglaga": "zyadasocha",
+            // 32
+            "ghazab": "ghazab", "amazing2": "ghazab", "kamaal": "ghazab",
+            // 33
+            "onlinedekhna": "onlinedekhna", "onlinecheck": "onlinedekhna", "stalk": "onlinedekhna",
+            // 34
+            "dushmankadushman": "dushmankadushman", "enemyenemy": "dushmankadushman", "hamdard": "dushmankadushman",
+            // 35
+            "buraanamano": "buraanamano", "nooffense": "buraanamano", "mazaakmein": "buraanamano",
+            // 36
+            "mirrormirror": "mirrormirror", "selfconfidence": "mirrormirror", "aainaa": "mirrormirror",
+            // 37
+            "merahero": "merahero", "hero": "merahero", "savior": "merahero",
+            // 38
+            "natkhat": "natkhat", "mischief": "natkhat", "shararat2": "natkhat",
+            // 39
+            "pareshan": "pareshan", "worried": "pareshan", "tension": "pareshan",
+            // 40
+            "interview": "interview", "hireornot": "interview", "qanda": "interview",
+            // 41
+            "kheltamam": "kheltamam", "gameover": "kheltamam", "tamam": "kheltamam",
+            // 42
+            "rishtapakka": "rishtapakka", "engaged": "rishtapakka", "mangni": "rishtapakka",
+            // 43
+            "pyaardukaan": "pyaardukaan", "loveshop": "pyaardukaan", "dildukaan": "pyaardukaan",
+            // 44
+            "zabaansambhlo": "zabaansambhlo", "watchwords": "zabaansambhlo", "muh": "zabaansambhlo",
+            // 45
+            "jhootawada": "jhootawada", "brokenpromise": "jhootawada", "wada": "jhootawada",
+            // 46
+            "sonawala": "sonawala", "precious": "sonawala", "heera": "sonawala",
+            // 47
+            "gossip": "gossip", "charcha": "gossip", "khabar": "gossip",
+            // 48
+            "funnyrishtedar": "funnyrishtedar", "relative": "funnyrishtedar", "rishtedaar": "funnyrishtedar",
+            // 49
+            "aankheband": "aankheband", "trustfall": "aankheband", "blindtrust": "aankheband",
+            // 50
+            "alvidanahi": "alvidanahi", "nodisconnect": "alvidanahi", "hamesha": "alvidanahi"
+        };
+
+        // Check: kya pehla word kisi trigger se match karta hai?
+        const matchedCommand = funTriggers[firstWord];
+        if (!matchedCommand) return;
+
+        // 🔒 SIRF GROUP commands ke liye group check
+        // (agar aap chahein toh yahan `if (!isGroup) return;` laga dein)
+        if (!isGroup) {
+            return conn.sendMessage(from, { text: "❌ This command only works in groups!" }, { quoted: mek });
+        }
+
+        // Reply function
+        const replyFn = async (text, opts) => {
+            const msgOpts = opts?.mentions
+                ? { text, mentions: opts.mentions }
+                : { text };
+            await conn.sendMessage(from, msgOpts, { quoted: mek });
+        };
+
+        // Command dhoondo — commands array mein
+        const { commands } = await import('../command.js');
+        const cmdObj = Object.values(commands).find(
+            c => c.pattern && c.pattern.toLowerCase() === matchedCommand
+        );
+
+        if (!cmdObj || !cmdObj.function) return;
+
+        // Command execute karo — dono naming conventions handle karo
+        // Kuch commands (conn, mek, store, {...}) use karti hain
+        // Kuch (conn, m, store, {...}) use karti hain
+        try {
+            await cmdObj.function(conn, mek, { ...mek, chat: from }, {
+                from,
+                reply: replyFn,
+                isCreator,
+                isGroup,
+                sender,
+                userConfig,
+                prefix: "",
+                command: matchedCommand,
+                q: userText.slice(firstWord.length).trim(),
+                args: userText.slice(firstWord.length).trim().split(/\s+/).filter(a => a),
+                text: userText.slice(firstWord.length).trim(),
+                groupMetadata: groupMetadata,
+                mentionedJid: mentionedJid,
+                m: mek,
+                mek: mek
+            });
+        } catch (e1) {
+            // Fallback — agar upar wala fail ho
+            await cmdObj.function(conn, mek, from, {
+                from,
+                reply: replyFn,
+                isCreator,
+                isGroup,
+                sender,
+                userConfig,
+                prefix: "",
+                command: matchedCommand,
+                q: userText.slice(firstWord.length).trim(),
+                args: userText.slice(firstWord.length).trim().split(/\s+/).filter(a => a),
+                groupMetadata: groupMetadata,
+                mentionedJid: mentionedJid
+            });
+        }
+
+    } catch (error) {
+        console.error("Fun No-Prefix Error:", error);
+    }
+});
