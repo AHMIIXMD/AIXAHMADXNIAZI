@@ -6,15 +6,10 @@ import { cmd } from '../command.js';
 
 const __filename = fileURLToPath(import.meta.url);
 
-cmd({
-    pattern: "apk",
-    alias: ["app"],
-    desc: "Download APK",
-    category: "download",
-    react: "📦",
-    filename: __filename
-},
-async (conn, mek, m, { from, reply, q }) => {
+// ==========================================
+// 🔧 Common function — APK download karne ke liye
+// ==========================================
+async function downloadAPK(conn, mek, m, { from, reply, q }) {
     try {
         if (!q) {
             return reply(
@@ -80,5 +75,67 @@ async (conn, mek, m, { from, reply, q }) => {
     } catch (e) {
         console.error("APK Command Error:", e);
         return reply("*❌ APK DOWNLOAD FAILED*\n\n*Please try again later.*");
+    }
+}
+
+// ==========================================
+// 📌 1. Prefix wala handler (.apk, .app)
+// ==========================================
+cmd({
+    pattern: "apk",
+    alias: ["app"],
+    desc: "Download APK",
+    category: "download",
+    react: "📦",
+    filename: __filename
+}, async (conn, mek, m, { from, reply, q }) => {
+    await downloadAPK(conn, mek, m, { from, reply, q });
+});
+
+// ==========================================
+// 📌 2. Bina prefix wala handler (apk, app)
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // APK triggers (bina prefix)
+        const apkTriggers = ["apk", "app"];
+
+        // Check: kya pehla word apk/app hai?
+        if (!apkTriggers.includes(firstWord)) return;
+
+        // Baaki text (APK ka naam)
+        const query = userText.slice(firstWord.length).trim();
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // APK download karo
+        await downloadAPK(conn, mek, { }, {
+            from,
+            reply: replyFn,
+            q: query
+        });
+
+    } catch (error) {
+        console.error("APK No-Prefix Error:", error);
     }
 });
