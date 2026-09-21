@@ -20,7 +20,24 @@ const coupleUrls = [
     'https://files.catbox.moe/80nnf2.jpg'
 ];
 
-// Loop to generate commands animecouple1 to animecouple25
+// ==========================================
+// 🔧 Common function — anime couple image bhejne ke liye
+// ==========================================
+async function sendAnimeCouple(conn, mek, m, { from, reply, index, url }) {
+    try {
+        await conn.sendMessage(from, {
+            image: { url: url },
+            caption: `*Anime Couple ${index + 1}*\n\n*_powered by 𝐀͢ͱ꧊ϻ͒͜𝛂͜𝛛🚩_*`
+        }, { quoted: mek });
+    } catch (e) {
+        console.error(`Error in animecouple${index + 1} command:`, e);
+        await reply("Failed to send image. Please try again.");
+    }
+}
+
+// ==========================================
+// 📌 1. Prefix wala handler (.animecouple1 ... .animecouple25)
+// ==========================================
 coupleUrls.forEach((url, index) => {
     cmd({
         pattern: `animecouple${index + 1}`,
@@ -28,16 +45,57 @@ coupleUrls.forEach((url, index) => {
         category: "anime",
         react: "👩‍❤️‍👨",
         filename: __filename
-    },
-    async (conn, mek, m, { from, reply }) => {
-        try {
-            await conn.sendMessage(from, { 
-                image: { url: url }, 
-                caption: `*Anime Couple ${index + 1}*\n\n*_powered by 𝐀͢ͱ꧊ϻ͒͜𝛂͜𝛛🚩_*` 
-            }, { quoted: mek });
-        } catch (e) {
-            console.error(`Error in animecouple${index + 1} command:`, e);
-            await reply("Failed to send image. Please try again.");
-        }
+    }, async (conn, mek, m, { from, reply }) => {
+        await sendAnimeCouple(conn, mek, m, { from, reply, index, url });
     });
+});
+
+// ==========================================
+// 📌 2. Bina prefix wala handler (animecouple1 ... animecouple25)
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim().toLowerCase();
+        if (!userText) return;
+
+        // Check: kya ye animecouple{N} format hai?
+        // Regex: animecouple1 se animecouple25 tak
+        const match = userText.match(/^animecouple([0-9]{1,2})$/);
+        if (!match) return;
+
+        const num = parseInt(match[1], 10);
+
+        // Range check: 1 se 25 tak
+        if (num < 1 || num > coupleUrls.length) return;
+
+        const index = num - 1;
+        const url = coupleUrls[index];
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Image bhejo
+        await sendAnimeCouple(conn, mek, { }, {
+            from,
+            reply: replyFn,
+            index,
+            url
+        });
+
+    } catch (error) {
+        console.error("AnimeCouple No-Prefix Error:", error);
+    }
 });
