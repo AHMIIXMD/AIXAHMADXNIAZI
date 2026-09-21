@@ -1337,3 +1337,128 @@ async (conn, mek, m, { from, reply, isCreator, prefix, userConfig }) => {
     
     await reply(settingsText);
 });
+// ==========================================
+// ⚙️ BINA PREFIX WALA AUTO HANDLER
+// Saari settings commands ko bina prefix chalata hai
+// 🔒 SIRF OWNER — pehle se har command mein check hai
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix,
+    mentionedJid,
+    quoted
+}) => {
+    try {
+        // 🔒 SIRF OWNER
+        if (!isCreator) return;
+
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // Saari settings commands ke triggers (aliases ke saath)
+        const settingsTriggers = {
+            // General Settings
+            "welcome": "welcome",
+            "goodbye": "goodbye",
+            "setwelcome": "setwelcome",
+            "setgoodbye": "setgoodbye",
+
+            // Anti Features
+            "antiedit": "antiedit",
+            "editpath": "editpath",
+            "autoread": "autoread", "readmsg": "autoread", "autoreadmsg": "autoread",
+            "antilink": "antilink", "linkblock": "antilink",
+            "antidelete": "antidelete", "antidel": "antidelete", "delblock": "antidelete",
+            "recording": "recording", "autorecording": "recording",
+            "statusview": "statusview", "autoview": "statusview",
+            "autoreact": "autoreact", "autoreaction": "autoreact", "reactauto": "autoreact",
+            "anticall": "anticall", "antcall": "anticall", "callblock": "anticall",
+            "anticallmsg": "anticallmsg", "callmsg": "anticallmsg", "rejectmsg": "anticallmsg",
+            "adminaction": "adminaction", "adminnotify": "adminaction",
+            "autotyping": "autotyping", "typing": "autotyping",
+            "online": "online", "alwaysonline": "online", "alwayson": "online",
+
+            // Moderation
+            "ban": "ban",
+            "unban": "unban",
+            "banlist": "banlist", "banned": "banlist",
+            "sudo": "sudo",
+            "delsudo": "delsudo", "removesudo": "delsudo",
+            "listsudo": "listsudo", "sudoers": "listsudo",
+
+            // Bot Settings
+            "mode": "mode", "mod": "mode",
+            "prefix": "prefix",
+            "botname": "botname", "name": "botname",
+            "ownername": "ownername",
+            "ownernumber": "ownernumber", "ownernum": "ownernumber", "ownerphone": "ownernumber",
+            "description": "description", "desc": "description", "about": "description",
+            "botdp": "botdp", "botimage": "botdp", "botpic": "botdp", "botphoto": "botdp",
+            "stickername": "stickername", "stickertext": "stickername", "stname": "stickername",
+            "delpath": "delpath", "deletepath": "delpath", "antideletepath": "delpath",
+            "reactemojis": "reactemojis", "reacts": "reactemojis", "reactset": "reactemojis",
+            "owneremojis": "owneremojis", "owneremojiset": "owneremojis", "ownerreacts": "owneremojis",
+
+            // Settings Menu
+            "settings": "settings", "setting": "settings", "env": "settings", "config": "settings"
+        };
+
+        // Check: kya pehla word kisi trigger se match karta hai?
+        const matchedCommand = settingsTriggers[firstWord];
+        if (!matchedCommand) return;
+
+        // Baaki text (args)
+        const restText = userText.slice(firstWord.length).trim();
+        const args = restText.split(/\s+/).filter(a => a);
+
+        // Reply function
+        const replyFn = async (text, opts) => {
+            const msgOpts = opts?.mentions
+                ? { text, mentions: opts.mentions }
+                : { text };
+            await conn.sendMessage(from, msgOpts, { quoted: mek });
+        };
+
+        // Command dhoondo — commands array mein
+        const { commands } = await import('../command.js');
+        const cmdObj = Object.values(commands).find(
+            c => c.pattern && c.pattern.toLowerCase() === matchedCommand
+        );
+
+        if (!cmdObj || !cmdObj.function) return;
+
+        // Command execute karo
+        await cmdObj.function(conn, mek, {
+            quoted: quoted,
+            mentionedJid: mentionedJid,
+            sender: sender
+        }, {
+            from,
+            reply: replyFn,
+            isCreator,
+            sender,
+            userConfig,
+            prefix: "",
+            command: matchedCommand,
+            q: restText,
+            args: args,
+            text: restText,
+            mentionedJid: mentionedJid,
+            quoted: quoted
+        });
+
+    } catch (error) {
+        console.error("Settings No-Prefix Error:", error);
+    }
+});
