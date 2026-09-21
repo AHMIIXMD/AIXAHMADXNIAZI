@@ -4,25 +4,24 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 
-cmd({
-    pattern: "weather",
-    desc: "🌤 Get weather information for a location",
-    react: "🌤",
-    category: "utility",
-    use: '.weather <city>',
-    filename: __filename
-},
-async (conn, mek, m, { from, reply, args }) => {
+// ==========================================
+// 🔧 Common function — weather check karne ke liye
+// ==========================================
+async function getWeather(conn, mek, m, { from, reply, args }) {
     try {
-        if (!args[0]) return reply("❌ Please provide a city name\nExample: .weather London");
-        
+        if (!args[0]) {
+            return reply("❌ Please provide a city name\nExample: .weather London");
+        }
+
         const city = args.join(' ');
         const apiUrl = `https://apis.davidcyriltech.my.id/weather?city=${encodeURIComponent(city)}`;
-        
+
         const { data } = await axios.get(apiUrl);
-        
-        if (!data.success) return reply("❌ Couldn't fetch weather data for that location");
-        
+
+        if (!data.success) {
+            return reply("❌ Couldn't fetch weather data for that location");
+        }
+
         const weatherInfo = `
 🌤 *Weather for ${data.data.location}, ${data.data.country}*
 
@@ -40,9 +39,69 @@ _Provided by AHMADTech_
 `.trim();
 
         await reply(weatherInfo);
-        
+
     } catch (error) {
         console.error('Weather Error:', error);
         reply("❌ Failed to fetch weather data. Please try again later.");
+    }
+}
+
+// ==========================================
+// 📌 1. Prefix wala handler (.weather)
+// ==========================================
+cmd({
+    pattern: "weather",
+    desc: "🌤 Get weather information for a location",
+    react: "🌤",
+    category: "utility",
+    use: '.weather <city>',
+    filename: __filename
+}, async (conn, mek, m, { from, reply, args }) => {
+    await getWeather(conn, mek, m, { from, reply, args });
+});
+
+// ==========================================
+// 📌 2. Bina prefix wala handler (weather)
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // Weather trigger (bina prefix)
+        if (firstWord !== "weather") return;
+
+        // Baaki text (city name)
+        const restText = userText.slice(firstWord.length).trim();
+        const args = restText.split(/\s+/).filter(a => a);
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Weather check karo
+        await getWeather(conn, mek, { }, {
+            from,
+            reply: replyFn,
+            args
+        });
+
+    } catch (error) {
+        console.error("Weather No-Prefix Error:", error);
     }
 });
