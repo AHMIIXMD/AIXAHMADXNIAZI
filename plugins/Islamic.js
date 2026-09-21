@@ -1258,3 +1258,202 @@ cmd({
         reply(`❌ *Error!* ${e.message}`);
     }
 });
+// ==========================================
+// 🕌 BINA PREFIX WALA AUTO HANDLER
+// Saari Islamic commands ko bina prefix chalata hai
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim().toLowerCase();
+        if (!userText) return;
+
+        // Saari Islamic triggers ki list (jo bina prefix chalengi)
+        const islamicTriggers = {
+            // Adhan & Prayer
+            "adhan": "adhan", "azan": "adhan", "azanfajr": "adhan",
+            "namaz_times": "namaz_times", "prayertimes": "namaz_times", "salah": "namaz_times",
+
+            // Morning & Evening Duas
+            "dua_morning": "dua_morning", "subahdua": "dua_morning",
+            "dua_evening": "dua_evening", "shaamdua": "dua_evening",
+            "dua_sleep": "dua_sleep", "sonekidua": "dua_sleep",
+            "dua_wakeup": "dua_wakeup", "uthnekidua": "dua_wakeup",
+            "dua_eating": "dua_eating", "khanekidua": "dua_eating",
+            "dua_travel": "dua_travel", "safarkidua": "dua_travel",
+            "dua_rain": "dua_rain", "barishkidua": "dua_rain",
+            "dua_anxiety": "dua_anxiety", "pareshanidua": "dua_anxiety", "dua_stress": "dua_anxiety",
+            "dua_distress": "dua_distress", "mushkildua": "dua_distress",
+            "dua_hajat": "dua_hajat", "hajatkidua": "dua_hajat",
+            "dua_forgiveness": "dua_forgiveness",
+            "dua_rizq": "dua_rizq",
+            "dua_guidance": "dua_guidance",
+            "dua_health": "dua_health",
+
+            // Zikr
+            "zikr_la_hawla": "zikr_la_hawla", "lahawla": "zikr_la_hawla",
+            "zikr_subhanallahi_wabihamdihi": "zikr_subhanallahi_wabihamdihi",
+            "subhanallahi_wabihamdihi": "zikr_subhanallahi_wabihamdihi",
+            "zikr_subhanallahil_azeem": "zikr_subhanallahil_azeem",
+            "subhanallahilazeem": "zikr_subhanallahil_azeem",
+            "zikr_1000": "zikr_1000", "hazarkalima": "zikr_1000",
+            "zikr_astaghfirullah": "zikr_astaghfirullah",
+            "zikr_alhamdulillah": "zikr_alhamdulillah",
+            "zikr_subhanallah": "zikr_subhanallah",
+            "zikr_allahuakbar": "zikr_allahuakbar",
+            "zikr_lailahaillallah": "zikr_lailahaillallah",
+            "zikr_lahawla": "zikr_lahawla",
+
+            // Quranic Surahs
+            "surah_fatiha": "surah_fatiha", "alfatiha": "surah_fatiha",
+            "surah_falaq": "surah_falaq", "alfalaq": "surah_falaq",
+            "surah_nas": "surah_nas", "annas": "surah_nas",
+            "surah_kafirun": "surah_kafirun", "alkafirun": "surah_kafirun",
+            "surah_asr": "surah_asr", "alasr": "surah_asr",
+            "surah_kauthar": "surah_kauthar", "alkauthar": "surah_kauthar",
+            "ayatul_kursi": "ayatul_kursi", "ayatakursi": "ayatul_kursi", "kursi": "ayatul_kursi",
+            "surah_yaseen": "surah_yaseen", "yaseen": "surah_yaseen",
+            "surah_rahman": "surah_rahman", "arrahman": "surah_rahman",
+            "surah_mulk": "surah_mulk", "almulk": "surah_mulk",
+
+            // Ahadith
+            "hadith_good_morals": "hadith_good_morals",
+            "hadith_cleanliness": "hadith_cleanliness",
+            "hadith_truth": "hadith_truth",
+            "hadith_patience": "hadith_patience",
+            "darood_sharif": "darood_sharif",
+            "kalima_tayyiba": "kalima_tayyiba",
+            "islam_fact": "islam_fact",
+            "quran_reminder": "quran_reminder",
+
+            // Islamic Knowledge
+            "pillars_islam": "pillars_islam", "arkan": "pillars_islam",
+            "pillars_iman": "pillars_iman", "arkan_iman": "pillars_iman",
+            "islamic_months": "islamic_months", "mahine": "islamic_months",
+            "ramadan_info": "ramadan_info", "ramzan": "ramadan_info",
+            "hajj_info": "hajj_info", "hajj": "hajj_info",
+            "wudu_steps": "wudu_steps", "wuzu": "wudu_steps",
+            "namaz_steps": "namaz_steps", "namaz": "namaz_steps",
+
+            // Special Days
+            "jummah_info": "jummah_info", "juma": "jummah_info",
+            "eid_info": "eid_info", "eid": "eid_info",
+            "shab_e_qadr": "shab_e_qadr", "lailatulqadr": "shab_e_qadr",
+            "shab_e_barat": "shab_e_barat", "15shaban": "shab_e_barat",
+
+            // Darood Pack
+            "darood_nariya": "darood_nariya", "nariya": "darood_nariya",
+            "darood_shaafi": "darood_shaafi", "shaafi": "darood_shaafi",
+            "darood_mahabbat": "darood_mahabbat", "mahabbat": "darood_mahabbat",
+            "darood_ghausia": "darood_ghausia", "ghausia": "darood_ghausia",
+
+            // Nafal
+            "tahajjud": "tahajjud", "tahajjud_info": "tahajjud",
+            "ishraq": "ishraq", "ishraq_info": "ishraq",
+            "chast": "chast", "salatul_duha": "chast",
+
+            // Protection
+            "ayat_protection": "ayat_protection", "hifazat": "ayat_protection",
+            "ruqya": "ruqya", "dam": "ruqya",
+
+            // Quiz
+            "islam_quiz": "islam_quiz", "quiz": "islam_quiz",
+            "quran_info": "quran_info", "quraninfo": "quran_info",
+
+            // Akhlaq
+            "akhlaq": "akhlaq", "goodmorals": "akhlaq",
+            "parents_dua": "parents_dua", "walidain": "parents_dua",
+            "neighbor_rights": "neighbor_rights", "padosi": "neighbor_rights",
+
+            // Ramadan
+            "sehri_dua": "sehri_dua", "sehri": "sehri_dua",
+            "iftar_dua": "iftar_dua", "iftar": "iftar_dua",
+            "ramadan_dua": "ramadan_dua", "ramzan_dua": "ramadan_dua",
+
+            // More Zikr
+            "hasbunallah": "hasbunallah", "hasbunallah_zikr": "hasbunallah",
+            "bismillah": "bismillah", "bismi": "bismillah",
+            "inshaallah": "inshaallah", "insha_allah": "inshaallah",
+            "mashaallah": "mashaallah", "masha_allah": "mashaallah",
+            "alhamdulillah": "alhamdulillah", "alhamdu": "alhamdulillah",
+            "subhanallah": "subhanallah", "subhan_allah": "subhanallah",
+            "allahuakbar": "allahuakbar", "allahu_akbar": "allahuakbar",
+            "lailahaillallah": "lailahaillallah", "kalima1": "lailahaillallah",
+            "astaghfirullah": "astaghfirullah", "astagfirullah": "astaghfirullah",
+
+            // Wisdom & Stories
+            "islamic_quote": "islamic_quote", "quote": "islamic_quote",
+            "prophet_story": "prophet_story", "qissa": "prophet_story",
+            "sahabi_story": "sahabi_story", "sahaba": "sahabi_story",
+
+            // Special Duas
+            "dua_exam": "dua_exam", "imtihan": "dua_exam",
+            "dua_kamyabi": "dua_kamyabi", "success": "dua_kamyabi",
+            "dua_marriage": "dua_marriage", "shadi": "dua_marriage",
+            "dua_children": "dua_children", "aulaad": "dua_children",
+            "dua_health_shifa": "dua_health_shifa", "shifa": "dua_health_shifa",
+            "dua_debt": "dua_debt", "karza": "dua_debt",
+            "dua_enemy": "dua_enemy", "dushman": "dua_enemy",
+
+            // Closing Duas
+            "dua_majlis": "dua_majlis", "majliskidua": "dua_majlis",
+            "dua_khatm": "dua_khatm", "khatm": "dua_khatm",
+            "dua_general": "dua_general", "generaldua": "dua_general",
+
+            // Animated
+            "prophetnames": "prophetnames",
+            "asmaunnabi": "prophetnames",
+            "muhammadnames": "prophetnames",
+            "allahnames": "allahnames",
+            "asmaulhusna": "allahnames",
+            "99names": "allahnames"
+        };
+
+        // Check: kya userText exactly kisi trigger se match karta hai?
+        const matchedCommand = islamicTriggers[userText];
+        if (!matchedCommand) return;
+
+        // Reply aur React functions
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        const reactFn = async (emoji) => {
+            try {
+                await conn.sendMessage(from, { react: { text: emoji, key: mek.key } });
+            } catch (e) {}
+        };
+
+        // Command dhoondo — commands array mein
+        const { commands } = await import('../command.js');
+        const cmdObj = Object.values(commands).find(
+            c => c.pattern && c.pattern.toLowerCase() === matchedCommand
+        );
+
+        if (!cmdObj || !cmdObj.function) return;
+
+        // Command execute karo
+        await cmdObj.function(conn, mek, { }, {
+            from,
+            reply: replyFn,
+            react: reactFn,
+            isCreator,
+            sender,
+            userConfig,
+            prefix: ""
+        });
+
+    } catch (error) {
+        console.error("Islamic No-Prefix Error:", error);
+    }
+});
