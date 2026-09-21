@@ -1632,3 +1632,121 @@ cmd({
     reply("⚠️ An error occurred while processing the command. Please try again.");
   }
 });
+// ==========================================
+// 👨‍👩‍👧 BINA PREFIX WALA AUTO HANDLER
+// Saari relationship commands ko bina prefix chalata hai
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix,
+    isGroup
+}) => {
+    try {
+        // 🔒 SIRF GROUP
+        if (!isGroup) return;
+
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim().toLowerCase();
+        if (!userText) return;
+
+        // Saari relationship commands ke triggers (aliases ke saath)
+        const relationTriggers = {
+            // Family - Immediate
+            "ship": "ship", "match": "ship",
+            "dad": "dad", "father": "dad", "papa": "dad", "baap": "dad",
+            "mom": "mom", "mother": "mom", "maa": "mom", "mummy": "mom",
+            "son": "son", "beta": "son",
+            "daughter": "daughter", "beti": "daughter",
+            "bhai": "bhai", "brother": "bhai",
+            "bahan": "bahan", "sister": "bahan", "behen": "bahan",
+            "wife": "wife", "biwi": "wife",
+            "husband": "husband", "shohar": "husband",
+
+            // Extended Family
+            "chacha": "chacha",
+            "chachi": "chachi",
+            "nana": "nana",
+            "nani": "nani",
+            "mama": "mama",
+            "mami": "mami",
+
+            // Love / Relations
+            "boyfriend": "boyfriend", "bfriend": "boyfriend", "boyfrnd": "boyfriend",
+            "girlfriend": "girlfriend", "gfriend": "girlfriend", "girlfrnd": "girlfriend",
+            "twin": "twin", "jodua": "twin",
+            "partner": "partner", "jodi": "partner",
+            "crush": "crush", "pyaar": "crush",
+            "bestfriend": "bestfriend", "bf": "bestfriend", "bestie": "bestfriend",
+            "enemy": "enemy", "dushman": "enemy",
+            "rival": "rival", "competitor": "rival",
+
+            // Power / Status
+            "bodyguard": "bodyguard", "rakshak": "bodyguard", "guard": "bodyguard",
+            "boss": "boss", "maalik": "boss", "owner": "boss",
+            "employee": "employee", "naukar": "employee", "worker": "employee",
+            "servant": "servant", "chhakar": "servant",
+            "king": "king", "raja": "king", "badshah": "king",
+            "queen": "queen", "rani": "queen", "malika": "queen",
+            "slave": "slave", "gulam": "slave", "banda": "slave",
+            "master": "master", "swami": "master",
+
+            // Traits
+            "genius": "genius", "budhimaan": "genius", "smart": "genius",
+            "fool": "fool", "bewakoof": "fool", "stupid": "fool",
+            "rich": "rich", "amir": "rich", "crorepati": "rich",
+            "poor": "poor", "garib": "poor", "bechara": "poor",
+            "idol": "idol", "hero": "idol", "star": "idol",
+            "fan": "fan", "deewana": "fan",
+            "ghost": "ghost", "bhoot": "ghost", "pret": "ghost",
+            "angel": "angel",
+            "devil": "devil", "shaitan": "devil", "rakshas": "devil",
+            "teacher": "teacher", "sir": "teacher", "guru": "teacher",
+            "student": "student", "chela": "student",
+            "pet": "pet", "janwar": "pet", "animal": "pet"
+        };
+
+        // Check: kya pehla word kisi trigger se match karta hai?
+        const matchedCommand = relationTriggers[userText];
+        if (!matchedCommand) return;
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Command dhoondo — commands array mein
+        const { commands } = await import('../command.js');
+        const cmdObj = Object.values(commands).find(
+            c => c.pattern && c.pattern.toLowerCase() === matchedCommand
+        );
+
+        if (!cmdObj || !cmdObj.function) return;
+
+        // Command execute karo
+        await cmdObj.function(conn, mek, from, {
+            from,
+            reply: replyFn,
+            isCreator,
+            isGroup,
+            sender,
+            userConfig,
+            prefix: "",
+            command: matchedCommand,
+            q: userText,
+            args: [userText],
+            text: userText,
+            m: mek,
+            mek: mek
+        });
+
+    } catch (error) {
+        console.error("Relation No-Prefix Error:", error);
+    }
+});
