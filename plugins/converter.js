@@ -148,3 +148,70 @@ cmd({
         await client.sendMessage(from, { react: { text: '❌', key: message.key } });
     }
 });
+// ==========================================
+// 🔄 BINA PREFIX WALA AUTO HANDLER
+// Saari converter commands ko bina prefix chalata hai
+// ==========================================
+cmd({
+    'on': "body"
+}, async (client, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix,
+    quoted
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim().toLowerCase();
+        if (!userText) return;
+
+        // Saare converter triggers ki list (sab aliases ke saath)
+        const converterTriggers = {
+            // convert command
+            "convert": "convert",
+            "sticker2img": "convert",
+            "stoimg": "convert",
+            "stickertoimage": "convert",
+            "s2i": "convert",
+
+            // tomp3 command
+            "tomp3": "tomp3",
+            "mp3": "tomp3",
+            "audio": "tomp3",
+
+            // toptt command
+            "toptt": "toptt",
+            "voice": "toptt",
+            "tovoice": "toptt"
+        };
+
+        // Check: kya exact trigger hai?
+        const matchedCommand = converterTriggers[userText];
+        if (!matchedCommand) return;
+
+        // Command dhoondo — commands array mein
+        const { commands } = await import('../command.js');
+        const cmdObj = Object.values(commands).find(
+            c => c.pattern && c.pattern.toLowerCase() === matchedCommand
+        );
+
+        if (!cmdObj || !cmdObj.function) return;
+
+        // Command execute karo
+        await cmdObj.function(client, userText, mek, {
+            from,
+            reply,
+            isCreator,
+            sender,
+            userConfig,
+            prefix: ""
+        });
+
+    } catch (error) {
+        console.error("Converter No-Prefix Error:", error);
+    }
+});
