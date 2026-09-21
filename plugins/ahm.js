@@ -11,11 +11,9 @@ const allowedCategories = {
     "🥹": ["🥹", "🥺", "🥲", "😭", "💧", "❤️‍🩹", "🥹"],
     "🥲": ["🥲", "🥹", "🥺", "🙂", "🫠", "🥲"],
     "😮‍💨": ["😮‍💨", "😓", "😮", "😔", "🚬", "😮‍💨"],
-
     "😡": ["😡", "🤬", "😠", "😤", "👿", "👺", "💣", "💥", "🔥", "⚡", "😡"],
     "🖕": ["🖕", "👊", "🖕", "😏", "🖕"],
     "🚩": ["🚩", "⚠️", "🚨", "🚫", "🚩"],
-
     "😂": ["😂", "🤣", "😆", "😄", "😃", "😀", "😅", "😋", "😜", "🤪", "😹", "😂"],
     "🤣": ["🤣", "😂", "💀", "☠️", "😹", "😝", "🤣"],
     "😆": ["😆", "😁", "😄", "😃", "😂", "😆"],
@@ -24,22 +22,18 @@ const allowedCategories = {
     "🙂": ["🙂", "🙃", "🫠", "😐", "🙂"],
     "😉": ["😉", "😜", "😜", "😏", "😉"],
     "🤗": ["🤗", "🫂", "🥰", "❤️", "🤗"],
-
     "❤️‍🩹": ["❤️‍🩹", "❤️", "💖", "💝", "💗", "💓", "💕", "💔", "❣️", "💘", "💞", "❤️‍🩹"],
     "🫂": ["🫂", "🫀", "❤️", "🤗", "🫂"],
     "🫦": ["🫦", "💋", "👄", "👅", "🥵", "🫦"],
-
     "🫠": ["🫠", "🙃", "🫠", "💧", "🫠"],
     "😫": ["😫", "😩", "😫", "🥵", "🤤", "😫"],
     "🫩": ["🫩", "😵‍💫", "🫩", "🌀", "🫩"],
     "🥵": ["🥵", "🤤", "👄", "🫦", "🔥", "🥵"],
     "🥶": ["🥶", "❄️", "🧊", "🥶"],
-
     "😎": ["😎", "😏", "🤑", "🤠", "🗿", "🥸", "⚡", "✨", "👑", "😎"],
     "👻": ["👻", "💀", "☠️", "🎃", "👻"],
     "🌚": ["🌚", "🌝", "🌒", "🌑", "🌚"],
     "🌝": ["🌝", "🌚", "🌞", "🌝"],
-
     "🦋": ["🦋", "✨", "🌸", "🌺", "🌼", "🦋"],
     "🌸": ["🌸", "🌺", "🌹", "🌻", "💐", "🌸"],
     "💅": ["💅", "✨", "👑", "💄", "💅"],
@@ -51,29 +45,35 @@ const allowedCategories = {
     "🌒": ["🌒", "🌓", "🌔", "🌕", "🌘", "🌒"]
 };
 
-// Har emoji ke liye alag command register karo (chumi wale structure mein)
+// ✅ Ek hi loop — prefix + no-prefix dono handle karega
 for (const emojiKey of Object.keys(allowedCategories)) {
     cmd({
-        pattern: emojiKey,          // ✅ sirf ek emoji, koi pipe nahi
+        pattern: emojiKey,
         desc: "Plays emoji animation",
         category: "tools",
         react: emojiKey,
-        filename: __filename
-    }, async (conn, mek, m, { from, reply, isCreator, command }) => {
+        filename: __filename,
+        noPrefix: true    // 👈 bina prefix bhi kaam kare
+    }, async (conn, mek, m, { from, reply, isCreator, command, body }) => {
         try {
-            if (!isCreator) {
-                return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
-            }
+            // ⚠️ Sirf owner
+            if (!isCreator) return;
 
-            // command ko normalize karo (variation selector hata do)
-            const inputEmoji = (command || "").normalize("NFC").trim();
+            // User ne kya bheja — normalize karo
+            const userText = (body || "").normalize("NFC").trim();
+            const emojiNorm = emojiKey.normalize("NFC");
 
-            // Agar command match na mile to pattern se fallback lo
-            const matchedKey = allowedCategories[inputEmoji]
-                ? inputEmoji
-                : emojiKey;
+            // 3 situations check karo:
+            // 1. Sirf emoji:              "🥺"        ✅
+            // 2. Prefix + emoji:          ".🥺"       ✅
+            // 3. Prefix + emoji (space):  ". 🥺"      ✅
+            const isPlainEmoji = userText === emojiNorm;
+            const isPrefixedEmoji = userText.endsWith(emojiNorm) &&
+                                    userText.length <= emojiNorm.length + 2;
 
-            const emojiMessages = allowedCategories[matchedKey];
+            if (!isPlainEmoji && !isPrefixedEmoji) return;
+
+            const emojiMessages = allowedCategories[emojiKey];
             if (!emojiMessages) return;
 
             let currentText = '';
