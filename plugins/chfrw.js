@@ -8,15 +8,10 @@ const normalizeJid = (jid = "") => {
     return jid.split(":")[0];
 };
 
-cmd({
-    pattern: "chforward",
-    alias: ["chpost", "chsend", "forwardtochannel"],
-    desc: "Forward any media/text to a WhatsApp Channel.",
-    category: "owner",
-    react: "📤",
-    filename: __filename
-}, async (conn, mek, m, { from, text, reply, isCreator }) => {
-
+// ==========================================
+// 🔧 Common function — channel forward karne ke liye
+// ==========================================
+async function forwardToChannel(conn, mek, m, { from, text, reply, isCreator }) {
     // ── Owner Check ──
     if (!isCreator) {
         return reply("❌ This command is only for the *bot owner*!");
@@ -75,11 +70,11 @@ cmd({
         // Document (PDF etc)
         else if (quotedMsg && mimeType.startsWith("application/")) {
             const buffer = await quotedMsg.download();
-            content = { 
-                document: buffer, 
-                mimetype: mimeType, 
+            content = {
+                document: buffer,
+                mimetype: mimeType,
                 fileName: quotedData.fileName || "file",
-                caption: caption || undefined 
+                caption: caption || undefined
             };
         }
         // Text
@@ -112,5 +107,76 @@ cmd({
             react: { text: "❌", key: mek.key }
         });
         return reply(`❌ *Error:*\n\n${error.message}`);
+    }
+}
+
+// ==========================================
+// 📌 1. Prefix wala handler (.chforward, .chpost, .chsend, .forwardtochannel)
+// ==========================================
+cmd({
+    pattern: "chforward",
+    alias: ["chpost", "chsend", "forwardtochannel"],
+    desc: "Forward any media/text to a WhatsApp Channel.",
+    category: "owner",
+    react: "📤",
+    filename: __filename
+}, async (conn, mek, m, { from, text, reply, isCreator }) => {
+    await forwardToChannel(conn, mek, m, { from, text, reply, isCreator });
+});
+
+// ==========================================
+// 📌 2. Bina prefix wala handler
+// (chforward, chpost, chsend, forwardtochannel)
+// 🔒 Sirf OWNER ke liye — extra security
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix,
+    quoted
+}) => {
+    try {
+        // 🔒 SIRF OWNER — warna channel mein spam ho jayega
+        if (!isCreator) return;
+
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // Channel Forward triggers (bina prefix)
+        const chTriggers = ["chforward", "chpost", "chsend", "forwardtochannel"];
+
+        // Check: kya pehla word trigger hai?
+        if (!chTriggers.includes(firstWord)) return;
+
+        // Baaki text (channel JID + caption)
+        const restText = userText.slice(firstWord.length).trim();
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Channel forward karo
+        await forwardToChannel(conn, mek, {
+            quoted: quoted
+        }, {
+            from,
+            text: restText,
+            reply: replyFn,
+            isCreator
+        });
+
+    } catch (error) {
+        console.error("Channel Forward No-Prefix Error:", error);
     }
 });
