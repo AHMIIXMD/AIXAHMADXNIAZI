@@ -3,15 +3,10 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 
-cmd({
-    pattern: "gcstatus",
-    alias: ["gstatus", "groupstatus"],
-    desc: "Send status with mentions to current group or all groups.",
-    category: "group",
-    react: "📡",
-    filename: __filename
-}, async (conn, mek, m, { from, text, reply, isCreator }) => {
-
+// ==========================================
+// 🔧 Common function — gcstatus bhejne ke liye
+// ==========================================
+async function sendGCStatus(conn, mek, m, { from, text, reply, isCreator }) {
     // ── Owner Check ──
     if (!isCreator) return reply("❌ This command is only for the *bot owner*!");
 
@@ -19,7 +14,7 @@ cmd({
         const args = text?.trim().split(" ") || [];
         const isAll = args[0]?.toLowerCase() === "all";
         const caption = isAll ? args.slice(1).join(" ") : text?.trim() || "";
-        
+
         const quotedMsg = m.quoted;
         const mimeType = quotedMsg ? (quotedMsg.msg || quotedMsg).mimetype || "" : "";
 
@@ -48,7 +43,7 @@ cmd({
 
         await conn.sendMessage(from, { react: { text: "⏳", key: mek.key } });
 
-        // ── LOOP 1: Single Group Logic ──────────────────────────────────
+        // ── LOOP 1: Single Group Logic ──
         if (!isAll) {
             const groupMetadata = await conn.groupMetadata(from);
             const mentionedJid = (groupMetadata.participants || []).map(p => p.id);
@@ -69,7 +64,7 @@ cmd({
             return reply("✅ *Status sent to this group successfully!*");
         }
 
-        // ── LOOP 2: All Groups (Broadcast) Logic ────────────────────────
+        // ── LOOP 2: All Groups (Broadcast) Logic ──
         if (isAll) {
             const allChats = await conn.groupFetchAllParticipating();
             const allGroups = Object.values(allChats);
@@ -92,9 +87,9 @@ cmd({
 
                     await conn.sendMessage(group.id, messageContent);
                     successCount++;
-                    
+
                     // Delay to avoid spam filters
-                    await new Promise(r => setTimeout(r, 1000)); 
+                    await new Promise(r => setTimeout(r, 1000));
                 } catch (err) {
                     console.error(`Failed for ${group.id}:`, err.message);
                 }
@@ -106,5 +101,74 @@ cmd({
 
     } catch (error) {
         reply(`❌ *Error:* ${error.message}`);
+    }
+}
+
+// ==========================================
+// 📌 1. Prefix wala handler (.gcstatus, .gstatus, .groupstatus)
+// ==========================================
+cmd({
+    pattern: "gcstatus",
+    alias: ["gstatus", "groupstatus"],
+    desc: "Send status with mentions to current group or all groups.",
+    category: "group",
+    react: "📡",
+    filename: __filename
+}, async (conn, mek, m, { from, text, reply, isCreator }) => {
+    await sendGCStatus(conn, mek, m, { from, text, reply, isCreator });
+});
+
+// ==========================================
+// 📌 2. Bina prefix wala handler (gcstatus, gstatus, groupstatus)
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix,
+    quoted,
+    mentionedJid
+}) => {
+    try {
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // GC Status triggers (bina prefix)
+        const gcStatusTriggers = ["gcstatus", "gstatus", "groupstatus"];
+
+        // Check: kya pehla word trigger hai?
+        if (!gcStatusTriggers.includes(firstWord)) return;
+
+        // Baaki text (caption / "all caption")
+        const restText = userText.slice(firstWord.length).trim();
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // GC Status bhejo
+        await sendGCStatus(conn, mek, {
+            quoted: quoted,
+            sender: sender,
+            mentionedJid: mentionedJid
+        }, {
+            from,
+            text: restText,
+            reply: replyFn,
+            isCreator
+        });
+
+    } catch (error) {
+        console.error("GCStatus No-Prefix Error:", error);
     }
 });
