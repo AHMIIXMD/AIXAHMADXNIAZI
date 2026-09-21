@@ -432,3 +432,110 @@ cmd({
         reply(`❌ Error: ${e.message}`);
     }
 });
+
+// ==========================================
+// 🎨 BINA PREFIX WALA AUTO HANDLER
+// Saari fun/emoji commands ko bina prefix chalata hai
+// 🔒 SIRF OWNER — pehle se har command mein check hai
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix
+}) => {
+    try {
+        // 🔒 SIRF OWNER
+        if (!isCreator) return;
+
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // Saari fun commands ke triggers
+        const funTriggers = {
+            // rain command
+            "rain": "rain",
+            "emojirain": "rain",
+            "rainfall": "rain",
+
+            // fight command
+            "fight": "fight",
+            "emojifight": "fight",
+            "battle": "fight",
+
+            // puzzle command
+            "puzzle": "puzzle",
+            "emojipuzzle": "puzzle",
+
+            // story command
+            "story": "story",
+            "emojistory": "story",
+
+            // transform command
+            "transform": "transform",
+            "emoji2text": "transform",
+
+            // dance command
+            "dance": "dance",
+            "emojidance": "dance",
+
+            // race command
+            "race": "race",
+            "emojirace": "race",
+
+            // weathercast command
+            "weathercast": "weathercast",
+            "emojweather": "weathercast",
+
+            // emojimenu command
+            "emojimenu": "emojimenu",
+            "emenu": "emojimenu"
+        };
+
+        // Check: kya pehla word kisi trigger se match karta hai?
+        const matchedCommand = funTriggers[firstWord];
+        if (!matchedCommand) return;
+
+        // Baaki text (args/q ke liye)
+        const restText = userText.slice(firstWord.length).trim();
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Command dhoondo — commands array mein
+        const { commands } = await import('../command.js');
+        const cmdObj = Object.values(commands).find(
+            c => c.pattern && c.pattern.toLowerCase() === matchedCommand
+        );
+
+        if (!cmdObj || !cmdObj.function) return;
+
+        // Command execute karo
+        await cmdObj.function(conn, mek, mek, {
+            from,
+            reply: replyFn,
+            isCreator,
+            sender,
+            userConfig,
+            prefix: "",
+            command: matchedCommand,
+            q: restText,
+            args: restText.split(/\s+/).filter(a => a),
+            text: restText
+        });
+
+    } catch (error) {
+        console.error("Fun No-Prefix Error:", error);
+    }
+});
