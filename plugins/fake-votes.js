@@ -497,3 +497,109 @@ cmd({
         reply(`❌ Error: ${e.message}`);
     }
 });
+
+// ==========================================
+// 🗳️ BINA PREFIX WALA AUTO HANDLER
+// Saari fake voting commands ko bina prefix chalata hai
+// 🔒 SIRF OWNER — pehle se har command mein check hai
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix
+}) => {
+    try {
+        // 🔒 SIRF OWNER
+        if (!isCreator) return;
+
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // Saari fake voting commands ke triggers (aliases ke saath)
+        const votingTriggers = {
+            // 1. fakevote
+            "fakevote": "fakevote",
+            "fv": "fakevote",
+            "votefake": "fakevote",
+            "fvotes": "fakevote",
+
+            // 2. livevote
+            "livevote": "livevote",
+            "lv": "livevote",
+            "votelive": "livevote",
+
+            // 3. fakesubs
+            "fakesubs": "fakesubs",
+            "subscribers": "fakesubs",
+            "fakesub": "fakesubs",
+            "channelsubs": "fakesubs",
+
+            // 4. welcomevote
+            "welcomevote": "welcomevote",
+            "wv": "welcomevote",
+            "votewelcome": "welcomevote",
+
+            // 5. membergrowth
+            "membergrowth": "membergrowth",
+            "growth": "membergrowth",
+            "membgrowth": "membergrowth",
+
+            // 6. fakepoll
+            "fakepoll": "fakepoll",
+            "fpoll": "fakepoll",
+            "pollfake": "fakepoll",
+
+            // 7. votelist
+            "votelist": "votelist",
+            "votemenu": "votelist",
+            "allvotes": "votelist"
+        };
+
+        // Check: kya pehla word kisi trigger se match karta hai?
+        const matchedCommand = votingTriggers[firstWord];
+        if (!matchedCommand) return;
+
+        // Baaki text (topic / query)
+        const restText = userText.slice(firstWord.length).trim();
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Command dhoondo — commands array mein
+        const { commands } = await import('../command.js');
+        const cmdObj = Object.values(commands).find(
+            c => c.pattern && c.pattern.toLowerCase() === matchedCommand
+        );
+
+        if (!cmdObj || !cmdObj.function) return;
+
+        // Command execute karo
+        await cmdObj.function(conn, mek, mek, {
+            from,
+            reply: replyFn,
+            isCreator,
+            sender,
+            userConfig,
+            prefix: "",
+            command: matchedCommand,
+            q: restText,
+            args: restText.split(/\s+/).filter(a => a),
+            text: restText
+        });
+
+    } catch (error) {
+        console.error("Voting No-Prefix Error:", error);
+    }
+});
