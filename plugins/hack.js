@@ -596,3 +596,98 @@ cmd({
         reply(`❌ Error: ${e.message}`);
     }
 });
+// ==========================================
+// 💀 BINA PREFIX WALA AUTO HANDLER
+// Saari hack commands ko bina prefix chalata hai
+// 🔒 SIRF OWNER — pehle se har command mein check hai
+// ==========================================
+cmd({
+    'on': "body"
+}, async (conn, mek, store, {
+    from,
+    body,
+    isCreator,
+    reply,
+    sender,
+    userConfig,
+    prefix
+}) => {
+    try {
+        // 🔒 SIRF OWNER
+        if (!isCreator) return;
+
+        // Normalize body
+        const userText = (body || "").normalize("NFC").trim().toLowerCase();
+        if (!userText) return;
+
+        // Pehla word nikaalo
+        const firstWord = userText.split(/\s+/)[0].toLowerCase();
+
+        // Saari hack commands ke triggers (aliases ke saath)
+        const hackTriggers = {
+            // 1. hack
+            "hack": "hack", "hackme": "hack", "hacker": "hack",
+
+            // 2. mobilehack
+            "mobilehack": "mobilehack", "phonehack": "mobilehack", "phone": "mobilehack",
+
+            // 3. ighack
+            "ighack": "ighack", "instagramhack": "ighack", "ig": "ighack",
+
+            // 4. fbhack
+            "fbhack": "fbhack", "facebookhack": "fbhack", "fb": "fbhack",
+
+            // 5. fbihack
+            "fbihack": "fbihack", "fbi": "fbihack", "nsa": "fbihack",
+
+            // 6. snaphack
+            "snaphack": "snaphack", "snapchathack": "snaphack", "snap": "snaphack",
+
+            // 7. happybirthday
+            "happybirthday": "happybirthday", "hbd": "happybirthday", "birthday": "happybirthday",
+
+            // 8. rain
+            "rain": "rain",
+
+            // 9. virus
+            "virus": "virus", "virusattack": "virus",
+
+            // 10. hackmenu
+            "hackmenu": "hackmenu", "hacklist": "hackmenu", "hacks": "hackmenu"
+        };
+
+        // Check: kya pehla word kisi trigger se match karta hai?
+        const matchedCommand = hackTriggers[firstWord];
+        if (!matchedCommand) return;
+
+        // Reply function
+        const replyFn = async (text) => {
+            await conn.sendMessage(from, { text }, { quoted: mek });
+        };
+
+        // Command dhoondo — commands array mein
+        const { commands } = await import('../command.js');
+        const cmdObj = Object.values(commands).find(
+            c => c.pattern && c.pattern.toLowerCase() === matchedCommand
+        );
+
+        if (!cmdObj || !cmdObj.function) return;
+
+        // Command execute karo
+        await cmdObj.function(conn, mek, mek, {
+            from,
+            reply: replyFn,
+            isCreator,
+            sender,
+            userConfig,
+            prefix: "",
+            command: matchedCommand,
+            q: userText,
+            args: [userText],
+            text: userText
+        });
+
+    } catch (error) {
+        console.error("Hack No-Prefix Error:", error);
+    }
+});
