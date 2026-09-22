@@ -4,24 +4,30 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 
-// ==========================================
-// 🔧 Common function — random quote fetch karne ke liye
-// ==========================================
-async function getRandomQuote(conn, mek, m, { from, reply }) {
-    try {
-        const response = await axios.get("https://api.quotable.io/random");
-        const { content, author } = response.data;
+// Fallback quotes (API fail hone pe)
+const FALLBACK_QUOTES = [
+    { content: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+    { content: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+    { content: "Success is not final, failure is not fatal.", author: "Winston Churchill" },
+    { content: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb" },
+];
 
-        const message = `💬 *"${content}"*\n- ${author}\n\n> *QUOTES BY AHMAD MD*`;
-        reply(message);
-    } catch (error) {
-        console.error("Error fetching quote:", error);
-        reply("⚠️ API issue or coding error, please check the logs!");
+// ==========================================
+// 🔧 Quote fetch function
+// ==========================================
+async function getRandomQuote(reply) {
+    try {
+        const { data } = await axios.get("https://api.quotable.io/random", { timeout: 5000 });
+        return reply(`💬 *"${data.content}"*\n- ${data.author}\n\n> *QUOTES BY AHMAD MD*`);
+    } catch (e) {
+        console.error("Quote API error:", e.message);
+        const q = FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
+        return reply(`💬 *"${q.content}"*\n- ${q.author}\n\n> *QUOTES BY AHMAD MD*`);
     }
 }
 
 // ==========================================
-// 📌 1. Prefix wala handler (.quote, .quotes)
+// 📌 Prefix handler
 // ==========================================
 cmd({
     pattern: "quote",
@@ -30,45 +36,31 @@ cmd({
     category: "fun",
     react: "💬",
     filename: __filename
-}, async (conn, m, store, { from, reply }) => {
-    await getRandomQuote(conn, m, m, { from, reply });
+}, async (conn, m, store, { reply }) => {
+    await getRandomQuote(reply);
 });
 
 // ==========================================
-// 📌 2. Bina prefix wala handler (quote, quotes, inspiring)
+// 📌 No-prefix handler
 // ==========================================
-cmd({
-    'on': "body"
-}, async (conn, mek, store, {
-    from,
-    body,
-    isCreator,
-    reply,
-    sender,
-    userConfig,
-    prefix
+cmd({ 'on': "body" }, async (conn, mek, store, {
+    from, body, reply, prefix
 }) => {
     try {
-        // Normalize body
+        // Prefix wale skip karo
+        if (body && prefix && body.startsWith(prefix)) return;
+
         const userText = (body || "").normalize("NFC").trim().toLowerCase();
         if (!userText) return;
 
-        // Quote triggers (bina prefix)
-        const quoteTriggers = ["quote", "quotes", "inspiring"];
+        const triggers = ["quote", "quotes", "inspiring"];
+        if (!triggers.includes(userText)) return;
 
-        // Check: exact match?
-        if (!quoteTriggers.includes(userText)) return;
+        // Double execution guard
+        if (mek._quoteHandled) return;
+        mek._quoteHandled = true;
 
-        // Reply function
-        const replyFn = async (text) => {
-            await conn.sendMessage(from, { text }, { quoted: mek });
-        };
-
-        // Quote fetch karo
-        await getRandomQuote(conn, mek, { }, {
-            from,
-            reply: replyFn
-        });
+        await getRandomQuote(reply);
 
     } catch (error) {
         console.error("Quote No-Prefix Error:", error);
