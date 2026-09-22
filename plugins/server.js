@@ -70,7 +70,7 @@ function validateEmojis(emojis) {
     return { valid: true, emojis };
 }
 
-// ==================== CHREACT COMMAND ====================
+// ==================== CHREACT COMMAND ===================
 cmd({
     pattern: "chreact",
     alias: ["channelreact", "react", "rp"],
@@ -82,32 +82,18 @@ cmd({
 }, async (conn, mek, m, { from, args, reply }) => {
     try {
         if (!args[0]) {
-            return reply(`❌ *Please provide a channel post URL!*
-
-*Example:* 
-.chreact https://whatsapp.com/channel/0029VbD059NBadmT79uGx41n/609
-
-*With custom emojis:*
-.chreact https://whatsapp.com/channel/0029VbD059NBadmT79uGx41n/609 ❤️,🫠,🥰
-`);
+            return reply(`❌ *Please provide a channel post URL!*\n\n*Example:* \n.chreact https://whatsapp.com/channel/0029VbD059NBadmT79uGx41n/609`);
         }
         
         const url = args[0];
         
         if (!isValidChannelPostUrl(url)) {
-            return reply(`❌ *Invalid URL!*
-
-*Valid format:* 
-https://whatsapp.com/channel/CHANNEL_ID/POST_ID
-
-*Example:* 
-https://whatsapp.com/channel/0029VbD059NBadmT79uGx41n/609
-`);
+            return reply(`❌ *Invalid URL!*`);
         }
         
         const ids = extractIdsFromUrl(url);
         if (!ids) {
-            return reply(`❌ *Failed to extract channel/post IDs from URL!*`);
+            return reply(`❌ *Failed to extract IDs!*`);
         }
         
         let emojis = [];
@@ -125,147 +111,70 @@ https://whatsapp.com/channel/0029VbD059NBadmT79uGx41n/609
         }
         
         const validation = validateEmojis(emojis);
-        if (!validation.valid) {
-            return reply(validation.error);
-        }
+        if (!validation.valid) return reply(validation.error);
         
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
         
-        const serversResponse = await axios.get(`${WebUrl}/servers`, { timeout: 10000 });
-        
-        if (!serversResponse.data || !serversResponse.data.servers) {
+        // ===== FIX 1: Servers fetch with better error handling =====
+        let servers = [];
+        try {
+            const serversResponse = await axios.get(`${WebUrl}/servers`, { timeout: 10000 });
+            if (serversResponse.data && Array.isArray(serversResponse.data.servers)) {
+                servers = serversResponse.data.servers;
+            }
+        } catch (err) {
+            console.error('Servers fetch failed:', err.message);
             await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
             return reply("❌ *Failed to fetch server list!*");
         }
-        
-        const servers = serversResponse.data.servers;
         
         if (servers.length === 0) {
             await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
             return reply("❌ *No servers found!*");
         }
         
-        const resultMessage = `✅ *Reactions sent successfully!*
+        // ===== FIX 2: Actually send and WAIT for reactions =====
+        let successCount = 0;
+        let failCount = 0;
+        
+        const results = await Promise.allSettled(
+            servers.map(async (server) => {
+                try {
+                    const reactUrl = `${server.url}/react?key=${Key}&url=${encodeURIComponent(url)}&emojis=${encodeURIComponent(emojisString)}`;
+                    const res = await axios.get(reactUrl, { timeout: 8000 });
+                    if (res.data && !res.data.error) {
+                        successCount++;
+                        return { server: server.name, ok: true };
+                    } else {
+                        failCount++;
+                        return { server: server.name, ok: false, error: res.data?.error };
+                    }
+                } catch (err) {
+                    failCount++;
+                    return { server: server.name, ok: false, error: err.message };
+                }
+            })
+        );
+        
+        // ===== FIX 3: Show real result =====
+        const resultMessage = `✅ *Reactions Processed!*
 
 📊 *Details:*
 🎯 *Channel:* ${ids.channelId}
 📝 *Post:* ${ids.postId}
 😊 *Emojis:* ${validation.emojis.join(' ')}
 🌐 *Servers:* ${servers.length}
+✅ *Success:* ${successCount}
+❌ *Failed:* ${failCount}
 
 > *Powered By 𝐀͢ͱ꧊ϻ͒͜𝛂͜𝛛🚩*`;
-
-        await reply(resultMessage);
-        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
         
-        for (const server of servers) {
-            const externalServerUrl = server.url;
-            const reactUrl = `${externalServerUrl}/react?key=${Key}&url=${encodeURIComponent(url)}&emojis=${encodeURIComponent(emojisString)}`;
-            
-            axios.get(reactUrl, { timeout: 5000 }).catch(() => {});
-        }
+        await reply(resultMessage);
+        await conn.sendMessage(from, { react: { text: successCount > 0 ? '✅' : '❌', key: m.key } });
         
     } catch (error) {
         console.error("React post error:", error);
         await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-        await reply(`❌ *Error processing request!*\n\n*Error:* ${error.message}`);
-    }
-});
-
-// ==================== STATUS COMMAND ====================
-cmd({
-    pattern: "status",
-    alias: ["serverstatus", "stats", "servers"],
-    react: "📊",
-    desc: "Check server status and active users",
-    category: "owner",
-    use: ".status",
-    filename: __filename
-}, async (conn, mek, m, { from, reply, react }) => {
-    try {
-        await react('⏳');
-
-        const serversResponse = await axios.get(`${WebUrl}/servers`, { timeout: 10000 });
-        
-        if (!serversResponse.data || !serversResponse.data.servers) {
-            await react('❌');
-            return reply("❌ Failed to fetch server list.");
-        }
-
-        const servers = serversResponse.data.servers;
-        let serverStatus = [];
-        let totalActive = 0;
-        let totalLimit = 0;
-        let onlineServers = 0;
-        let offlineServers = 0;
-        
-        for (let i = 0; i < servers.length; i++) {
-            const server = servers[i];
-            
-            try {
-                const statusResponse = await axios.get(`${server.url}/active`, { timeout: 8000 });
-                
-                if (statusResponse.data && !statusResponse.data.error) {
-                    const count = statusResponse.data.count || 0;
-                    const limit = statusResponse.data.limit || 50;
-                    const statusEmoji = getCountStatus(count);
-                    
-                    serverStatus.push({
-                        server: server.id,
-                        name: server.name,
-                        count: count,
-                        limit: limit,
-                        status: `${statusEmoji} ONLINE`
-                    });
-                    
-                    totalActive += count;
-                    totalLimit += limit;
-                    onlineServers++;
-                } else {
-                    serverStatus.push({
-                        server: server.id,
-                        name: server.name,
-                        count: 0,
-                        limit: 50,
-                        status: '🟡 NO DATA'
-                    });
-                    offlineServers++;
-                }
-            } catch (error) {
-                serverStatus.push({
-                    server: server.id,
-                    name: server.name,
-                    count: 0,
-                    limit: 50,
-                    status: '🔴 OFFLINE'
-                });
-                offlineServers++;
-            }
-        }
-
-        await react('✅');
-
-        let statusMessage = `╭──「 *SERVER STATUS* 」\n│\n`;
-        statusMessage += `│ *📊 Overview*\n`;
-        statusMessage += `│ Total: ${servers.length}\n`;
-        statusMessage += `│ Online: ${onlineServers} | Offline: ${offlineServers}\n`;
-        statusMessage += `│ Active: ${totalActive}/${totalLimit}\n`;
-        statusMessage += `│\n`;
-        statusMessage += `│━━━━━━━━━━━━━━━━━━━━\n`;
-
-        serverStatus.forEach((s) => {
-            let statusIcon = s.status.split(' ')[0];
-            let statusText = s.status.split(' ')[1];
-            statusMessage += `│ ${s.name.padEnd(8)}: ${s.count.toString().padStart(2)}/${s.limit} ${statusIcon} ${statusText}\n`;
-        });
-
-        statusMessage += `╰─────────────────`;
-
-        await reply(statusMessage);
-
-    } catch (error) {
-        console.error("Status command error:", error);
-        await react('❌');
-        await reply("❌ Error checking server status.");
+        await reply(`❌ *Error:* ${error.message}`);
     }
 });
