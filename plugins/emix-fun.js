@@ -7,9 +7,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 
 // ==========================================
-// 🔧 Common function — emoji mix sticker banane ke liye
+// 🔧 Common function — from param add kiya
 // ==========================================
-async function createEmixSticker(conn, mek, m, { args, q, reply }) {
+async function createEmixSticker(conn, mek, m, { args, q, reply, from }) {
     try {
         if (!q || !q.includes(",")) {
             return reply("❌ *Usage:* .emix 😂,🙂\n_Send two emojis separated by a comma._");
@@ -38,16 +38,19 @@ async function createEmixSticker(conn, mek, m, { args, q, reply }) {
         });
 
         const stickerBuffer = await sticker.toBuffer();
-        await conn.sendMessage(mek.chat || from, { sticker: stickerBuffer }, { quoted: mek });
+
+        // ✅ FIX: from use kiya, mek.chat nahi
+        const targetChat = from || mek.chat || mek.key?.remoteJid;
+        await conn.sendMessage(targetChat, { sticker: stickerBuffer }, { quoted: mek });
 
     } catch (e) {
-        console.error("Error in .emix command:", e.message);
+        console.error("Error in emix command:", e.message);
         reply(`❌ Could not generate emoji mix: ${e.message}`);
     }
 }
 
 // ==========================================
-// 📌 1. Prefix wala handler (.emix)
+// 📌 Prefix handler
 // ==========================================
 cmd({
     pattern: "emix",
@@ -56,50 +59,48 @@ cmd({
     react: "😃",
     use: ".emix 😂,🙂",
     filename: __filename,
-}, async (conn, mek, m, { args, q, reply }) => {
-    await createEmixSticker(conn, mek, m, { args, q, reply });
+}, async (conn, mek, m, { args, q, reply, from }) => {
+    await createEmixSticker(conn, mek, m, { args, q, reply, from });
 });
 
 // ==========================================
-// 📌 2. Bina prefix wala handler (emix)
+// 📌 No-prefix handler
 // ==========================================
-cmd({
-    'on': "body"
-}, async (conn, mek, store, {
-    from,
-    body,
-    isCreator,
-    reply,
-    sender,
-    userConfig,
-    prefix
+cmd({ 'on': "body" }, async (conn, mek, store, {
+    from, body, isCreator, reply, sender, userConfig, prefix
 }) => {
     try {
-        // Normalize body (emojis ke liye NFC zaroori hai)
+        // ✅ Prefix wale messages skip karo — double execution rok
+        if (body && prefix && body.startsWith(prefix)) return;
+
         const userText = (body || "").normalize("NFC").trim();
         if (!userText) return;
 
-        // Pehla word nikaalo
         const firstWord = userText.split(/\s+/)[0].toLowerCase();
-
-        // Emix trigger (bina prefix)
         if (firstWord !== "emix") return;
 
-        // Baaki text (emoji1,emoji2)
         const query = userText.slice(firstWord.length).trim();
 
-        // Reply function
+        // ✅ Query empty guard
+        if (!query || !query.includes(",")) {
+            return await conn.sendMessage(from, {
+                text: "❌ *Usage:* emix 😂,🙂"
+            }, { quoted: mek });
+        }
+
+        // ✅ Double execution guard
+        if (mek._emixHandled) return;
+        mek._emixHandled = true;
+
         const replyFn = async (text) => {
             await conn.sendMessage(from, { text }, { quoted: mek });
         };
 
-        // Emix sticker banao
-        await createEmixSticker(conn, mek, {
-            chat: from
-        }, {
+        await createEmixSticker(conn, mek, { chat: from }, {
             args: query.split(/\s+/).filter(a => a),
             q: query,
-            reply: replyFn
+            reply: replyFn,
+            from: from   // ✅ from pass kiya
         });
 
     } catch (error) {
