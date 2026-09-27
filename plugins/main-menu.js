@@ -21,14 +21,14 @@ const toSmallCaps = (text) => {
     return text.toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
 };
 
-// --- SIMPLE CLEAN CATEGORY DESIGN ---
+// --- STYLISH CATEGORY DESIGN ---
 const formatCategory = (category, cmds) => {
     const validCmds = cmds.filter(cmd => cmd.pattern && cmd.pattern.trim() !== '');
     if (validCmds.length === 0) return ''; 
     
-    let title = `\n╭───〔 *${category.toUpperCase()} MENU* 〕───\n│\n`;
-    let body = validCmds.map(cmd => `│ ⚡︎ *${toSmallCaps(cmd.pattern)}*`).join('\n');
-    let footer = `\n│\n╰───────────────────────\n`;
+    let title = `\n╭───────〔 *${toSmallCaps(category)} ᴍᴇɴᴜ* 〕───────\n│\n`;
+    let body = validCmds.map(cmd => `│  ▫️ *${toSmallCaps(cmd.pattern)}*`).join('\n');
+    let footer = `\n│\n╰───────────────────────────────\n`;
     
     return `${title}${body}${footer}`;
 };
@@ -65,21 +65,25 @@ async (conn, mek, m, { from, pushname, reply }) => {
 
         const BOT_NAME = config.BOT_NAME || "AHMAD-MD";
         const uptime = runtime(process.uptime());
+        const ramUsed = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
+        const totalRam = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
 
-        // --- UPGRADED PREMIUM INTERFACE DESIGN ---
+        // --- ULTRA PREMIUM INTERFACE DESIGN ---
         let dec = `
-👑 *${BOT_NAME.toUpperCase()}* 👑
+✨ *${BOT_NAME.toUpperCase()}* ✨
 
-           *بِسْمِ اللّٰہِ الرَّحْمٰنِ الرَّحِیمِ*
-       *اِیَّاکَ نَعۡبُدُ وَ اِیَّاکَ نَسۡتَعِیۡنُ*☝️
+        *بِسْمِ اللّٰہِ الرَّحْمٰنِ الرَّحِیمِ*
+   *اِیَّاکَ نَعۡبُدُ وَ اِیَّاکَ نَسۡتَعِیۡنُ*☝️
 
-┌─── ❖
-│ 👑 *Owner:* ${config.OWNER_NAME || "Ahmad Hassan"}
-│ ⏱️ *Uptime:* ${uptime}
-│ 📜 *Commands:* ${Object.keys(commands).length}
-│ 🌐 *Mode:* ${config.MODE || "Public"}
-│ 🖥️ *RAM:* ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB / ${(os.totalmem() / 1024 / 1024 / 1024).toFixed(2)} GB
-└───📌
+╭───────〔 *sʏsᴛᴇᴍ ɪɴғᴏ* 〕───────
+│
+│ 👤 *ᴏᴡɴᴇʀ:* ${config.OWNER_NAME || "Ahmad Hassan"}
+│ ⏱️ *ᴜᴘᴛɪᴍᴇ:* ${uptime}
+│ 📜 *ᴄᴏᴍᴍᴀɴᴅs:* ${Object.keys(commands).length}
+│ 🌐 *ᴍᴏᴅᴇ:* ${config.MODE || "Public"}
+│ 🖥️ *ʀᴀᴍ:* ${ramUsed} MB / ${totalRam} GB
+│
+╰───────────────────────────────
 ${menuSections}
 > *✨ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴀʜᴍᴀᴅ ʜᴀssᴀɴ ✨*`;
 
