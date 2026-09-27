@@ -1,4 +1,4 @@
-Import config from '../config.js';
+import config from '../config.js';
 import { cmd, commands } from '../command.js';
 import path from 'path';
 import os from "os";
@@ -70,7 +70,7 @@ async (conn, mek, m, { from, pushname, reply }) => {
 
         // --- PERFECTLY CENTERED & AESTHETIC UI ---
         let dec = `
-${BOT_NAME.toUpperCase()}
+  ${BOT_NAME.toUpperCase()}
 
 ‎              *بِسْمِ اللّٰہِ الرَّحْمٰنِ الرَّحِیمِ*
 ‎       *اِیَّاکَ نَعۡبُدُ وَ اِیَّاکَ نَسۡتَعِیۡنُ* ☝️
@@ -88,7 +88,7 @@ ${menuSections}
 > *✨ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴀʜᴍᴀᴅ ʜᴀssᴀɴ ✨*`;
 
         // Image URL Selection
-        let imageToUse = "https://files.catbox.moe/ldy5wg.jpg";
+        let imageToUse = "https://files.catbox.moe/ptvl03.jpg";
 
         // 1. Menu Image Send with Caption
         await conn.sendMessage(from, { 
