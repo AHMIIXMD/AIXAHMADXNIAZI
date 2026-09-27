@@ -21,13 +21,13 @@ const toSmallCaps = (text) => {
     return text.toLowerCase().split('').map(char => smallCapsMap[char] || char).join('');
 };
 
-// --- STYLISH CATEGORY DESIGN ---
+// --- STYLISH & CLEAN CATEGORY DESIGN ---
 const formatCategory = (category, cmds) => {
     const validCmds = cmds.filter(cmd => cmd.pattern && cmd.pattern.trim() !== '');
     if (validCmds.length === 0) return ''; 
     
     let title = `\n╭───────〔 *${toSmallCaps(category)} ᴍᴇɴᴜ* 〕───────\n│\n`;
-    let body = validCmds.map(cmd => `│  ▫️ *${toSmallCaps(cmd.pattern)}*`).join('\n');
+    let body = validCmds.map(cmd => `│   •  *${toSmallCaps(cmd.pattern)}*`).join('\n');
     let footer = `\n│\n╰───────────────────────────────\n`;
     
     return `${title}${body}${footer}`;
@@ -68,12 +68,12 @@ async (conn, mek, m, { from, pushname, reply }) => {
         const ramUsed = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
         const totalRam = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
 
-        // --- ULTRA PREMIUM INTERFACE DESIGN ---
+        // --- PERFECTLY CENTERED & AESTHETIC UI ---
         let dec = `
-✨ *${BOT_NAME.toUpperCase()}* ✨
+👑 *${BOT_NAME.toUpperCase()}* 👑
 
-        *بِسْمِ اللّٰہِ الرَّحْمٰنِ الرَّحِیمِ*
-   *اِیَّاکَ نَعۡبُدُ وَ اِیَّاکَ نَسۡتَعِیۡنُ*☝️
+‎              *بِسْمِ اللّٰہِ الرَّحْمٰنِ الرَّحِیمِ*
+‎       *اِیَّاکَ نَعۡبُدُ وَ اِیَّاکَ نَسۡتَعِیۡنُ* ☝️
 
 ╭───────〔 *sʏsᴛᴇᴍ ɪɴғᴏ* 〕───────
 │
@@ -88,7 +88,7 @@ ${menuSections}
 > *✨ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴀʜᴍᴀᴅ ʜᴀssᴀɴ ✨*`;
 
         // Image URL Selection
-        let imageToUse = "https://files.catbox.moe/ptvl03.jpg";
+        let imageToUse = "https://files.catbox.moe/ldy5wg.jpg";
 
         // 1. Menu Image Send with Caption
         await conn.sendMessage(from, { 
